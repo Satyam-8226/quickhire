@@ -5,16 +5,16 @@ const app = require("./app");
 
 const PORT = process.env.PORT || 5000;
 
-// MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log("MongoDB Connected");
+    console.log("MongoDB Connected Successfully");
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
   })
   .catch((error) => {
-    console.log("MongoDB Error:", error.message);
+    console.log("Database connection failed");
+    console.log(error.message);
   });
