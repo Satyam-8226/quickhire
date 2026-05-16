@@ -1,20 +1,28 @@
-require("dotenv").config();
+import dotenv from "dotenv";
+import express from "express";
+import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoute.js";
 
-const mongoose = require("mongoose");
-const app = require("./app");
+dotenv.config();
 
+const app = express();
+
+// Database Connection
+connectDB();
+
+// Middleware
+app.use(express.json());
+app.use("/api/auth", authRoutes);
+
+// Test Route
+app.get("/", (req, res) => {
+    res.send("QuickHire API is running...");
+});
+
+// PORT
 const PORT = process.env.PORT || 5000;
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB Connected Successfully");
-
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.log("Database connection failed");
-    console.log(error.message);
-  });
+// Server Start
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
