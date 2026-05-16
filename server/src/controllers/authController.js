@@ -113,7 +113,6 @@ const loginUser = async (req, res) => {
 
 
 
-
 // EXPORT CONTROLLERS
 export {
     registerUser,
