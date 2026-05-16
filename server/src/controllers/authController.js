@@ -114,7 +114,11 @@ const loginUser = async (req, res) => {
 
 
 
+<<<<<<< HEAD
 // EXPORT CONTROLLERS
+=======
+
+>>>>>>> fa88202e3dfddc1fcd98d02c3b6bede00345fb60
 export {
     registerUser,
     loginUser,
