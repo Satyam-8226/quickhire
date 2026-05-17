@@ -1,5 +1,4 @@
 // Basic request validators for auth routes
-// These are beginner-friendly, dependency-free checks.
 
 const isEmail = (value) => /\S+@\S+\.\S+/.test(value);
 
