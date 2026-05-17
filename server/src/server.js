@@ -1,28 +1,26 @@
 import dotenv from "dotenv";
-import express from "express";
 import connectDB from "./config/db.js";
-import authRoutes from "./routes/authRoute.js";
+import validateEnv from "./utils/validateEnv.js";
+import app from "./app.js";
+import notFound from "./middlewares/notFound.js";
+import errorHandler from "./middlewares/errorMiddleware.js";
 
+// Load env early
 dotenv.config();
 
-const app = express();
+// Basic env validation
+validateEnv();
 
-// Database Connection
+// Connect to DB
 connectDB();
 
-// Middleware
-app.use(express.json());
-app.use("/api/auth", authRoutes);
+// 404 handler (for unknown routes)
+app.use(notFound);
 
-// Test Route
-app.get("/", (req, res) => {
-    res.send("QuickHire API is running...");
-});
+// Centralized error handler
+app.use(errorHandler);
 
-// PORT
 const PORT = process.env.PORT || 5000;
-
-// Server Start
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
