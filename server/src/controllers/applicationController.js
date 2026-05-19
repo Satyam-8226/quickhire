@@ -2,6 +2,7 @@ import Application from '../models/applicationModel.js';
 import Job from '../models/jobModel.js';
 import asyncHandler from '../middlewares/asyncHandler.js';
 import cloudinary from '../config/cloudinary.js';
+import User from '../models/userModel.js';
 
 
 // @desc    Apply to job
@@ -30,7 +31,7 @@ export const applyToJob = asyncHandler(async (req, res) => {
     applicant: req.user._id,
     job: req.params.jobId,
     coverLetter: req.body.coverLetter || '',
-    resume: req.body.resume || '',
+    resume: req.user.resume || '',
   });
 
   res.status(201).json({
@@ -124,6 +125,13 @@ export const uploadResume = asyncHandler(async (req, res) => {
       folder: 'quickhire/resumes',
     }
   );
+
+  // Save resume URL in user profile
+  const user = await User.findById(req.user._id);
+
+  user.resume = result.secure_url;
+
+  await user.save();
 
   res.status(200).json({
     success: true,
