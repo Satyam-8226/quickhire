@@ -3,6 +3,7 @@ import Job from '../models/jobModel.js';
 import asyncHandler from '../middlewares/asyncHandler.js';
 import cloudinary from '../config/cloudinary.js';
 import User from '../models/userModel.js';
+import ErrorResponse from '../utils/errorResponse.js';
 
 
 // @desc    Apply to job
@@ -12,9 +13,8 @@ export const applyToJob = asyncHandler(async (req, res) => {
   const job = await Job.findById(req.params.jobId);
 
   if (!job) {
-    res.status(404);
-    throw new Error('Job not found');
-  }
+  throw new ErrorResponse('Job not found', 404);
+}
 
   // Check already applied
   const alreadyApplied = await Application.findOne({
@@ -22,10 +22,10 @@ export const applyToJob = asyncHandler(async (req, res) => {
     job: req.params.jobId,
   });
 
-  if (alreadyApplied) {
-    res.status(400);
-    throw new Error('Already applied to this job');
-  }
+  throw new ErrorResponse(
+    'Already applied to this job',
+    400
+  );
 
   const application = await Application.create({
     applicant: req.user._id,
@@ -49,14 +49,13 @@ export const getApplicantsForJob = asyncHandler(async (req, res) => {
   const job = await Job.findById(req.params.jobId);
 
   if (!job) {
-    res.status(404);
-    throw new Error('Job not found');
+    throw new ErrorResponse('Job not found', 404);
   }
 
   // Only creator can view applicants
   if (job.createdBy.toString() !== req.user._id.toString()) {
     res.status(403);
-    throw new Error('Not authorized');
+    throw new ErrorResponse('Not authorized', 403);
   }
 
   const applications = await Application.find({
@@ -85,7 +84,7 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
 
   if (!application) {
     res.status(404);
-    throw new Error('Application not found');
+    throw new ErrorResponse('Application not found', 404);
   }
 
   // Only job creator can update status
@@ -94,7 +93,7 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
     req.user._id.toString()
   ) {
     res.status(403);
-    throw new Error('Not authorized');
+    throw new ErrorResponse('Not authorized', 403);
   }
 
   application.status = status;
@@ -115,7 +114,7 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
 export const uploadResume = asyncHandler(async (req, res) => {
   if (!req.file) {
     res.status(400);
-    throw new Error('No file uploaded');
+    throw new ErrorResponse('No file uploaded', 400);
   }
 
   const result = await cloudinary.uploader.upload(

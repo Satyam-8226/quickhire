@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
 import asyncHandler from "../middlewares/asyncHandler.js";
 import generateToken from "../utils/generateToken.js";
+import ErrorResponse from "../utils/errorResponse.js";
 
 // Register a new user
 // - Validates uniqueness, hashes password, returns token + user info
@@ -12,7 +13,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const userExists = await User.findOne({ email });
   if (userExists) {
     res.status(400);
-    throw new Error("User already exists");
+    throw new ErrorResponse("User already exists", 400);
   }
 
   // Hash password
@@ -48,13 +49,13 @@ const loginUser = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) {
     res.status(401);
-    throw new Error("Invalid credentials");
+    throw new ErrorResponse("Invalid credentials", 401);
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     res.status(401);
-    throw new Error("Invalid credentials");
+    throw new ErrorResponse("Invalid credentials", 401);
   }
 
   res.status(200).json({

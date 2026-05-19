@@ -1,5 +1,7 @@
 import Job from '../models/jobModel.js';
 import asyncHandler from '../middlewares/asyncHandler.js';
+import Application from '../models/applicationModel.js';
+import ErrorResponse from '../utils/errorResponse.js';
 
 
 // @desc    Create new job
@@ -45,6 +47,11 @@ export const getAllJobs = asyncHandler(async (req, res) => {
   const location = req.query.location || '';
   const jobType = req.query.jobType || '';
 
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
+  const skip = (page - 1) * limit;
+
   const query = {
     title: {
       $regex: keyword,
@@ -62,10 +69,18 @@ export const getAllJobs = asyncHandler(async (req, res) => {
     },
   };
 
-  const jobs = await Job.find(query).sort({ createdAt: -1 });
+  const totalJobs = await Job.countDocuments(query);
+
+  const jobs = await Job.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
 
   res.status(200).json({
     success: true,
+    currentPage: page,
+    totalPages: Math.ceil(totalJobs / limit),
+    totalJobs,
     count: jobs.length,
     jobs,
   });
@@ -79,8 +94,7 @@ export const getJobById = asyncHandler(async (req, res) => {
   const job = await Job.findById(req.params.id);
 
   if (!job) {
-    res.status(404);
-    throw new Error('Job not found');
+    throw new ErrorResponse('Job not found', 404);
   }
 
   res.status(200).json({
@@ -97,14 +111,13 @@ export const updateJob = asyncHandler(async (req, res) => {
   const job = await Job.findById(req.params.id);
 
   if (!job) {
-    res.status(404);
-    throw new Error('Job not found');
+    throw new ErrorResponse('Job not found', 404);
   }
 
   // Check ownership
   if (job.createdBy.toString() !== req.user._id.toString()) {
     res.status(403);
-    throw new Error('Not authorized to update this job');
+    throw new ErrorResponse('Not authorized', 403);
   }
 
   const updatedJob = await Job.findByIdAndUpdate(
@@ -131,14 +144,13 @@ export const deleteJob = asyncHandler(async (req, res) => {
   const job = await Job.findById(req.params.id);
 
   if (!job) {
-    res.status(404);
-    throw new Error('Job not found');
-  }
+  throw new ErrorResponse('Job not found', 404);
+}
 
   // Check ownership
   if (job.createdBy.toString() !== req.user._id.toString()) {
     res.status(403);
-    throw new Error('Not authorized to delete this job');
+    throw new ErrorResponse('Not authorized', 403);
   }
 
   await job.deleteOne();
@@ -146,5 +158,31 @@ export const deleteJob = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Job deleted successfully',
+  });
+});
+
+
+// @desc    Recruiter dashboard stats
+// @route   GET /api/jobs/stats
+// @access  Private
+export const getRecruiterStats = asyncHandler(async (req, res) => {
+  const totalJobs = await Job.countDocuments({
+    createdBy: req.user._id,
+  });
+
+  const recruiterJobs = await Job.find({
+    createdBy: req.user._id,
+  });
+
+  const jobIds = recruiterJobs.map(job => job._id);
+
+  const totalApplications = await Application.countDocuments({
+    job: { $in: jobIds },
+  });
+
+  res.status(200).json({
+    success: true,
+    totalJobs,
+    totalApplications,
   });
 });

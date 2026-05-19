@@ -6,6 +6,7 @@ import {
   getJobById,
   updateJob,
   deleteJob,
+  getRecruiterStats
 } from '../controllers/jobController.js';
 
 import { protect, authorizeRoles } from '../middlewares/authMiddleware.js';
@@ -15,6 +16,12 @@ const router = express.Router();
 
 // Public Routes
 router.get('/', getAllJobs);
+router.get(
+  '/stats',
+  protect,
+  authorizeRoles('recruiter', 'admin'),
+  getRecruiterStats
+);
 router.get('/:id', getJobById);
 
 
