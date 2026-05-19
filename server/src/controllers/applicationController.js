@@ -1,6 +1,7 @@
 import Application from '../models/applicationModel.js';
 import Job from '../models/jobModel.js';
 import asyncHandler from '../middlewares/asyncHandler.js';
+import cloudinary from '../config/cloudinary.js';
 
 
 // @desc    Apply to job
@@ -36,5 +37,97 @@ export const applyToJob = asyncHandler(async (req, res) => {
     success: true,
     message: 'Applied successfully',
     application,
+  });
+});
+
+
+// @desc    Get applicants for a job
+// @route   GET /api/applications/job/:jobId
+// @access  Private (Recruiter/Admin)
+export const getApplicantsForJob = asyncHandler(async (req, res) => {
+  const job = await Job.findById(req.params.jobId);
+
+  if (!job) {
+    res.status(404);
+    throw new Error('Job not found');
+  }
+
+  // Only creator can view applicants
+  if (job.createdBy.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Not authorized');
+  }
+
+  const applications = await Application.find({
+    job: req.params.jobId,
+  })
+    .populate('applicant', 'name email role')
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: applications.length,
+    applications,
+  });
+});
+
+
+// @desc    Update application status
+// @route   PUT /api/applications/:applicationId
+// @access  Private (Recruiter/Admin)
+export const updateApplicationStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+
+  const application = await Application.findById(
+    req.params.applicationId
+  ).populate('job');
+
+  if (!application) {
+    res.status(404);
+    throw new Error('Application not found');
+  }
+
+  // Only job creator can update status
+  if (
+    application.job.createdBy.toString() !==
+    req.user._id.toString()
+  ) {
+    res.status(403);
+    throw new Error('Not authorized');
+  }
+
+  application.status = status;
+
+  await application.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Application status updated',
+    application,
+  });
+});
+
+
+// @desc    Upload resume
+// @route   PUT /api/applications/upload-resume
+// @access  Private
+export const uploadResume = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    res.status(400);
+    throw new Error('No file uploaded');
+  }
+
+  const result = await cloudinary.uploader.upload(
+    req.file.path,
+    {
+      resource_type: 'auto',
+      folder: 'quickhire/resumes',
+    }
+  );
+
+  res.status(200).json({
+    success: true,
+    message: 'Resume uploaded successfully',
+    resumeUrl: result.secure_url,
   });
 });
