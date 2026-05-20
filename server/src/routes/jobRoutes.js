@@ -2,6 +2,7 @@ import express from 'express';
 
 import {
   createJob,
+  getMyJobs,
   getAllJobs,
   getJobById,
   updateJob,
@@ -15,6 +16,13 @@ const router = express.Router();
 
 
 // Public Routes
+router.get(
+  '/my-jobs',
+  protect,
+  authorizeRoles('recruiter', 'admin'),
+  getMyJobs
+);
+
 router.get('/', getAllJobs);
 router.get(
   '/stats',

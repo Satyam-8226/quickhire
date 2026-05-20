@@ -6,14 +6,19 @@ const errorHandler = (err, req, res, next) => {
 
   let message = err.message || 'Server Error';
 
+  // Invalid MongoDB ObjectId
+  if (err.name === 'CastError') {
+    message = 'Resource not found';
+    statusCode = 404;
+  }
+
   res.status(statusCode).json({
     success: false,
     message,
-    stack:
-      process.env.NODE_ENV === 'production'
-        ? null
-        : err.stack,
+    ...(process.env.NODE_ENV !== 'production' && {
+      stack: err.stack,
+    }),
   });
-};
+  };
 
 export default errorHandler;

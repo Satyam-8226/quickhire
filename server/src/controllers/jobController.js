@@ -39,6 +39,22 @@ export const createJob = asyncHandler(async (req, res) => {
 });
 
 
+// @desc    Get recruiter jobs
+// @route   GET /api/jobs/my-jobs
+// @access  Private
+export const getMyJobs = asyncHandler(async (req, res) => {
+  const jobs = await Job.find({
+    createdBy: req.user._id,
+  }).sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: jobs.length,
+    jobs,
+  });
+});
+
+
 // @desc    Get all jobs
 // @route   GET /api/jobs
 // @access  Public
