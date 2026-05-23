@@ -45,7 +45,18 @@ function Login() {
 
       alert("Login successful");
 
-      navigate("/");
+      if (data.user.role === "candidate") {
+
+        navigate("/candidate/dashboard");
+
+      } else if (data.user.role === "recruiter") {
+
+        navigate("/recruiter/dashboard");
+
+      } else {
+
+        navigate("/");
+      }
 
     } catch (error) {
 
