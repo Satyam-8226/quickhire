@@ -140,3 +140,20 @@ export const uploadResume = asyncHandler(async (req, res) => {
     resumeUrl: result.secure_url,
   });
 });
+
+export const getMyApplications = asyncHandler(
+  async (req, res) => {
+    const applications =
+      await Application.find({
+        candidate: req.user._id,
+      }).populate(
+        "job"
+      );
+
+    res.status(200).json({
+      success: true,
+      count: applications.length,
+      applications,
+    });
+  }
+);

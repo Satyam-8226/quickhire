@@ -1,75 +1,119 @@
 import { useEffect, useState } from "react";
+
 import { getMyApplications } from "../../api/applicationApi";
+
 import Loader from "../../components/common/Loader";
 import EmptyState from "../../components/common/EmptyState";
 import ErrorState from "../../components/common/ErrorState";
-import { CheckCircle2, Clock, XCircle, FileText } from "lucide-react";
+
+import {
+  CheckCircle2,
+  Clock,
+  XCircle,
+  FileText,
+} from "lucide-react";
 
 const Applications = () => {
   const [applications, setApplications] =
     useState([]);
+
   const [loading, setLoading] =
     useState(true);
-  const [error, setError] = useState("");
+
+  const [error, setError] =
+    useState("");
 
   useEffect(() => {
-    const fetchApplications =
-      async () => {
-        try {
-          setLoading(true);
-          setError("");
-
-          const data =
-            await getMyApplications();
-
-          setApplications(
-            data.applications || []
-          );
-        } catch (err) {
-          setError(
-            err.response?.data
-              ?.message ||
-              "Failed to fetch applications"
-          );
-        } finally {
-          setLoading(false);
-        }
-      };
-
     fetchApplications();
   }, []);
 
+  const fetchApplications = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const data =
+        await getMyApplications();
+
+      setApplications(
+        data?.applications || []
+      );
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Failed to fetch applications"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusIcon = (status) => {
+    const iconClass =
+      "w-5 h-5";
+
     switch (status) {
       case "accepted":
         return (
-          <CheckCircle2 className="w-5 h-5 text-green-500" />
+          <CheckCircle2
+            className={`${iconClass} text-green-500`}
+          />
         );
+
       case "rejected":
         return (
-          <XCircle className="w-5 h-5 text-red-500" />
+          <XCircle
+            className={`${iconClass} text-red-500`}
+          />
         );
+
       case "reviewed":
         return (
-          <FileText className="w-5 h-5 text-blue-500" />
+          <FileText
+            className={`${iconClass} text-blue-500`}
+          />
         );
+
       default:
         return (
-          <Clock className="w-5 h-5 text-yellow-500" />
+          <Clock
+            className={`${iconClass} text-yellow-500`}
+          />
         );
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusStyles = (
+    status
+  ) => {
     switch (status) {
       case "accepted":
-        return "bg-green-50 border-green-200";
+        return {
+          card: "bg-green-50 border-green-200",
+          badge:
+            "bg-green-100 text-green-700",
+        };
+
       case "rejected":
-        return "bg-red-50 border-red-200";
+        return {
+          card: "bg-red-50 border-red-200",
+          badge:
+            "bg-red-100 text-red-700",
+        };
+
       case "reviewed":
-        return "bg-blue-50 border-blue-200";
+        return {
+          card: "bg-blue-50 border-blue-200",
+          badge:
+            "bg-blue-100 text-blue-700",
+        };
+
       default:
-        return "bg-yellow-50 border-yellow-200";
+        return {
+          card: "bg-yellow-50 border-yellow-200",
+          badge:
+            "bg-yellow-100 text-yellow-700",
+        };
     }
   };
 
@@ -84,91 +128,107 @@ const Applications = () => {
       <ErrorState
         title="Failed to load applications"
         message={error}
+        onRetry={fetchApplications}
+      />
+    );
+  }
+
+  if (applications.length === 0) {
+    return (
+      <EmptyState
+        title="No applications yet"
+        message="You haven't applied to any jobs yet. Start exploring available opportunities."
       />
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
           My Applications
         </h1>
+
         <p className="text-gray-600">
-          Track all your job applications
+          Track the status of all your job
+          applications
         </p>
       </div>
 
-      {/* Applications List */}
-      {applications.length > 0 ? (
-        <div className="space-y-4">
-          {applications.map(
-            (application) => (
+      {/* Applications */}
+      <div className="space-y-5">
+        {applications.map(
+          (application) => {
+            const statusStyles =
+              getStatusStyles(
+                application.status
+              );
+
+            return (
               <div
                 key={application._id}
-                className={`border rounded-lg p-6 transition ${getStatusColor(
-                  application.status
-                )}`}
+                className={`border rounded-xl p-6 transition hover:shadow-md ${statusStyles.card}`}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
+                {/* Top Section */}
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
+                  <div>
                     <h2 className="text-xl font-semibold text-gray-900 mb-1">
-                      {
-                        application.job
-                          ?.title
-                      }
+                      {application.job?.title ||
+                        "Untitled Job"}
                     </h2>
 
-                    <p className="text-gray-600 font-medium">
-                      {
-                        application.job
-                          ?.company
-                      }
+                    <p className="text-gray-700 font-medium">
+                      {application.job?.company ||
+                        "Unknown Company"}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div
+                    className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold w-fit ${statusStyles.badge}`}
+                  >
                     {getStatusIcon(
                       application.status
                     )}
-                    <span className="capitalize font-semibold text-gray-700">
-                      {application.status}
+
+                    <span className="capitalize">
+                      {
+                        application.status
+                      }
                     </span>
                   </div>
                 </div>
 
                 {/* Details */}
-                <div className="grid md:grid-cols-3 gap-4 text-sm mb-4">
+                <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm mb-5">
                   <div>
-                    <p className="text-gray-500 text-xs uppercase">
+                    <p className="text-gray-500 uppercase text-xs mb-1">
                       Location
                     </p>
-                    <p className="font-medium">
-                      {
-                        application.job
-                          ?.location
-                      }
+
+                    <p className="font-medium text-gray-800">
+                      {application.job?.location ||
+                        "N/A"}
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-gray-500 text-xs uppercase">
+                    <p className="text-gray-500 uppercase text-xs mb-1">
                       Job Type
                     </p>
-                    <p className="font-medium">
-                      {
-                        application.job
-                          ?.jobType
-                      }
+
+                    <p className="font-medium text-gray-800">
+                      {application.job?.type ||
+                        "N/A"}
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-gray-500 text-xs uppercase">
+                    <p className="text-gray-500 uppercase text-xs mb-1">
                       Applied On
                     </p>
-                    <p className="font-medium">
+
+                    <p className="font-medium text-gray-800">
                       {new Date(
                         application.createdAt
                       ).toLocaleDateString()}
@@ -176,23 +236,23 @@ const Applications = () => {
                   </div>
                 </div>
 
-                {/* Description Preview */}
-                <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-                  {
-                    application.job
-                      ?.description
-                  }
-                </p>
+                {/* Description */}
+                <div>
+                  <p className="text-gray-500 uppercase text-xs mb-2">
+                    Description
+                  </p>
+
+                  <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
+                    {application.job
+                      ?.description ||
+                      "No description available"}
+                  </p>
+                </div>
               </div>
-            )
-          )}
-        </div>
-      ) : (
-        <EmptyState
-          title="No applications yet"
-          message="You haven't applied to any jobs yet. Browse available jobs and start applying!"
-        />
-      )}
+            );
+          }
+        )}
+      </div>
     </div>
   );
 };

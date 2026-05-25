@@ -1,44 +1,64 @@
-import express from 'express';
+import express from "express";
+
 import {
-    applyToJob,
-    getApplicantsForJob,
-    updateApplicationStatus,
-    uploadResume
-} from '../controllers/applicationController.js';
+  applyToJob,
+  getApplicantsForJob,
+  getMyApplications,
+  updateApplicationStatus,
+  uploadResume,
+} from "../controllers/applicationController.js";
+
 import {
   protect,
   authorizeRoles,
-} from '../middlewares/authMiddleware.js';
-import upload from '../middlewares/uploadMiddleware.js';
+} from "../middlewares/authMiddleware.js";
+
+import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
-router.post(
-  '/:jobId',
+/*
+  Candidate Routes
+*/
+
+router.get(
+  "/me",
   protect,
-  authorizeRoles('candidate'),
+  authorizeRoles("candidate"),
+  getMyApplications
+);
+
+router.put(
+  "/upload-resume",
+  protect,
+  authorizeRoles("candidate"),
+  upload.single("resume"),
+  uploadResume
+);
+
+router.post(
+  "/:jobId",
+  protect,
+  authorizeRoles("candidate"),
   applyToJob
 );
 
+/*
+  Recruiter Routes
+*/
+
 router.get(
-  '/job/:jobId',
+  "/job/:jobId",
   protect,
-  authorizeRoles('recruiter', 'admin'),
+  authorizeRoles("recruiter", "admin"),
   getApplicantsForJob
 );
 
 router.put(
-  '/:applicationId',
+  "/:applicationId",
   protect,
-  authorizeRoles('recruiter', 'admin'),
+  authorizeRoles("recruiter", "admin"),
   updateApplicationStatus
-);
-
-router.put(
-  '/upload-resume',
-  protect,
-  upload.single('resume'),
-  uploadResume
 );
 
 export default router;
