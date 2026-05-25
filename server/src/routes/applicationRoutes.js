@@ -16,7 +16,7 @@ const router = express.Router();
 router.post(
   '/:jobId',
   protect,
-  authorizeRoles('student', 'user'),
+  authorizeRoles('candidate'),
   applyToJob
 );
 

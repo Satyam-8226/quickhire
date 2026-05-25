@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 import API from "../../api/axios";
 
@@ -37,15 +38,17 @@ function Register() {
         formData
       );
 
-      alert(response.data.message || "Registration successful");
+      toast.success("Registration successful. Redirecting to login...");
 
-      navigate("/login");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
 
     } catch (error) {
 
       console.log(error.response?.data);
 
-      alert(
+      toast.error(
         error.response?.data?.message ||
         error.response?.data?.errors?.[0] ||
         "Registration failed"
@@ -58,68 +61,110 @@ function Register() {
   };
 
   return (
-    <div className="p-10">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
 
-      <h1 className="text-3xl font-bold mb-6">
-        Register
-      </h1>
+      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
 
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-4 max-w-md"
-      >
+        <h1 className="text-3xl font-bold mb-2 text-center">
+          Join QuickHire
+        </h1>
 
-        <input
-          type="text"
-          name="name"
-          placeholder="Enter name"
-          value={formData.name}
-          onChange={handleChange}
-          className="border p-3"
-        />
+        <p className="text-gray-600 text-center mb-6">
+          Create your account to get started
+        </p>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Enter email"
-          value={formData.email}
-          onChange={handleChange}
-          className="border p-3"
-        />
-
-        <input
-          type="password"
-          name="password"
-          placeholder="Enter password"
-          value={formData.password}
-          onChange={handleChange}
-          className="border p-3"
-        />
-
-        <select
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
-          className="border p-3"
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
         >
-          <option value="candidate">
-            Candidate
-          </option>
 
-          <option value="recruiter">
-            Recruiter
-          </option>
-        </select>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Full Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              placeholder="John Doe"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+            />
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-black text-white p-3"
-        >
-          {loading ? "Registering..." : "Register"}
-        </button>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+            />
+          </div>
 
-      </form>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              placeholder="At least 6 characters"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              minLength="6"
+              className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              I am a...
+            </label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+            >
+              <option value="candidate">
+                Candidate (Job Seeker)
+              </option>
+
+              <option value="recruiter">
+                Recruiter (Hiring)
+              </option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-black text-white py-3 rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition"
+          >
+            {loading ? "Creating Account..." : "Register"}
+          </button>
+
+        </form>
+
+        <p className="text-center text-gray-600 mt-6">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-black font-medium hover:underline"
+          >
+            Login here
+          </Link>
+        </p>
+
+      </div>
 
     </div>
   );

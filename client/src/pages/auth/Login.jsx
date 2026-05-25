@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 import API from "../../api/axios";
 
@@ -43,7 +44,7 @@ function Login() {
 
       login(data.user, data.token);
 
-      alert("Login successful");
+      toast.success("Login successful");
 
       if (data.user.role === "candidate") {
 
@@ -62,7 +63,7 @@ function Login() {
 
       console.error(error);
 
-      alert(
+      toast.error(
         error.response?.data?.message ||
         "Login failed"
       );
@@ -74,44 +75,74 @@ function Login() {
   };
 
   return (
-    <div className="p-10">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
 
-      <h1 className="text-3xl font-bold mb-6">
-        Login
-      </h1>
+      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
 
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-4 max-w-md"
-      >
+        <h1 className="text-3xl font-bold mb-2 text-center">
+          Welcome Back
+        </h1>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Enter email"
-          value={formData.email}
-          onChange={handleChange}
-          className="border p-3"
-        />
+        <p className="text-gray-600 text-center mb-6">
+          Sign in to your QuickHire account
+        </p>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Enter password"
-          value={formData.password}
-          onChange={handleChange}
-          className="border p-3"
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-black text-white p-3"
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
         >
-          {loading ? "Logging in..." : "Login"}
-        </button>
 
-      </form>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-black text-white py-3 rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+
+        </form>
+
+        <p className="text-center text-gray-600 mt-6">
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            className="text-black font-medium hover:underline"
+          >
+            Register here
+          </Link>
+        </p>
+
+      </div>
 
     </div>
   );

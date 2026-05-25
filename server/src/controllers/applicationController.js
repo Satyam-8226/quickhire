@@ -13,8 +13,8 @@ export const applyToJob = asyncHandler(async (req, res) => {
   const job = await Job.findById(req.params.jobId);
 
   if (!job) {
-  throw new ErrorResponse('Job not found', 404);
-}
+    throw new ErrorResponse('Job not found', 404);
+  }
 
   // Check already applied
   const alreadyApplied = await Application.findOne({
@@ -22,10 +22,12 @@ export const applyToJob = asyncHandler(async (req, res) => {
     job: req.params.jobId,
   });
 
-  throw new ErrorResponse(
-    'Already applied to this job',
-    400
-  );
+  if (alreadyApplied) {
+    throw new ErrorResponse(
+      'Already applied to this job',
+      400
+    );
+  }
 
   const application = await Application.create({
     applicant: req.user._id,

@@ -1,60 +1,55 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-
 import {
-  getAllJobs,
+  getMyJobs,
   deleteJob,
 } from "../../api/jobApi";
+import JobCard from "../../components/jobs/JobCard";
+import Loader from "../../components/common/Loader";
+import EmptyState from "../../components/common/EmptyState";
+import ErrorState from "../../components/common/ErrorState";
+import { Plus } from "lucide-react";
 
 function RecruiterJobs() {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchRecruiterJobs =
-      async () => {
-        try {
-          setLoading(true);
-
-          const data =
-            await getAllJobs();
-
-          setJobs(data.jobs);
-        } catch (err) {
-          setError(
-            err.response?.data
-              ?.message ||
-              "Failed to fetch jobs"
-          );
-        } finally {
-          setLoading(false);
-        }
-      };
-
-    fetchRecruiterJobs();
+    fetchJobs();
   }, []);
 
-  const handleDelete = async (
-    jobId
-  ) => {
-    const confirmDelete =
-      window.confirm(
-        "Are you sure you want to delete this job?"
-      );
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-    if (!confirmDelete) {
+      const data = await getMyJobs();
+
+      setJobs(data.jobs);
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Failed to fetch jobs"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (jobId) => {
+    const confirm = window.confirm(
+      "Are you sure you want to delete this job?"
+    );
+
+    if (!confirm) {
       return;
     }
 
     try {
-      const data =
-        await deleteJob(jobId);
+      const data = await deleteJob(jobId);
 
       toast.success(
         data.message ||
@@ -62,101 +57,80 @@ function RecruiterJobs() {
       );
 
       setJobs((prev) =>
-        prev.filter(
-          (job) => job._id !== jobId
-        )
+        prev.filter((job) => job._id !== jobId)
       );
     } catch (err) {
       toast.error(
-        err.response?.data
-          ?.message ||
+        err.response?.data?.message ||
           "Failed to delete job"
       );
     }
   };
 
-  if (loading) {
-    return (
-      <h2>Loading jobs...</h2>
-    );
-  }
+  const handleEdit = (jobId) => {
+    navigate(`/recruiter/edit-job/${jobId}`);
+  };
 
-  if (error) {
-    return <h2>{error}</h2>;
+  const handleRetry = () => {
+    fetchJobs();
+  };
+
+  if (loading) {
+    return <Loader message="Loading your jobs..." />;
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          My Jobs
-        </h1>
+    <div className="max-w-6xl mx-auto p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-1">
+            My Job Postings
+          </h1>
+          <p className="text-gray-600">
+            Manage all your job listings
+          </p>
+        </div>
 
         <Link
           to="/recruiter/create-job"
-          className="border px-4 py-2 rounded"
+          className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-lg hover:opacity-90 transition"
         >
+          <Plus className="w-5 h-5" />
           Create Job
         </Link>
       </div>
 
-      {jobs.length === 0 ? (
-        <p>No jobs found</p>
-      ) : (
-        jobs.map((job) => (
-          <div
-            key={job._id}
-            className="border p-4 rounded space-y-2"
-          >
-            <h2 className="text-xl font-semibold">
-              {job.title}
-            </h2>
+      {/* Error State */}
+      {error && !loading && (
+        <ErrorState
+          title="Failed to load jobs"
+          message={error}
+          onRetry={handleRetry}
+        />
+      )}
 
-            <p>
-              Company: {job.company}
-            </p>
+      {/* Jobs List */}
+      {!error && jobs.length > 0 && (
+        <div className="grid gap-6">
+          {jobs.map((job) => (
+            <JobCard
+              key={job._id}
+              job={job}
+              showActions={true}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
 
-            <p>
-              Location: {job.location}
-            </p>
-
-            <p>
-              Job Type: {job.jobType}
-            </p>
-
-            <div className="flex gap-2">
-              <Link
-                to={`/jobs/${job._id}`}
-                className="border px-3 py-1 rounded"
-              >
-                View
-              </Link>
-
-              <Link
-                to={`/recruiter/jobs/${job._id}/applicants`}
-                className="border px-3 py-1 rounded"
-              >
-                View Applicants
-              </Link>
-
-              <Link
-                to={`/recruiter/jobs/edit/${job._id}`}
-                className="border px-3 py-1 rounded"
-              >
-                Edit
-              </Link>
-
-              <button
-                onClick={() =>
-                  handleDelete(job._id)
-                }
-                className="border px-3 py-1 rounded"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))
+      {/* Empty State */}
+      {!error && jobs.length === 0 && (
+        <EmptyState
+          title="No jobs posted yet"
+          message="Create your first job posting to get started"
+        />
       )}
     </div>
   );

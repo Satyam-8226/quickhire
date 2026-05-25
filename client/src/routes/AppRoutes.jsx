@@ -3,15 +3,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 
 import Home from "../pages/public/Home";
-import Jobs from "../pages/public/Jobs";
+import Jobs from "../pages/public/JobPage";
 import JobDetails from "../pages/public/JobDetails";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 
 import ProtectedRoute from "./ProtectedRoute";
-import CandidateDashboard from "../pages/candidate/CandidateDashboard";
-import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
+import CandidateDashboard from "../pages/candidate/CandidateDashBoard";
+import RecruiterDashboard from "../pages/recruiter/RecruiterDashBoard";
 
 import CandidateLayout from "../layouts/CandidateLayout";
 import Applications from "../pages/candidate/Applications";
@@ -20,6 +20,7 @@ import Resume from "../pages/candidate/Resume";
 import RecruiterLayout from "../layouts/RecruiterLayout";
 import RecruiterJobs from "../pages/recruiter/RecruiterJobs";
 import CreateJob from "../pages/recruiter/CreateJob";
+import EditJob from "../pages/recruiter/EditJob";
 
 function AppRoutes() {
   return (
@@ -82,6 +83,11 @@ function AppRoutes() {
             <Route
               path="create-job"
               element={<CreateJob />}
+            />
+
+            <Route
+              path="edit-job/:id"
+              element={<EditJob />}
             />
 
           </Route>

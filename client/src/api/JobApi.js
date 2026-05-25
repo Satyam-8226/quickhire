@@ -13,6 +13,19 @@ export const getAllJobs = async (
   return response.data;
 };
 
+export const getMyJobs = async (
+  params = {}
+) => {
+  const response = await api.get(
+    "/jobs/my-jobs",
+    {
+      params,
+    }
+  );
+
+  return response.data;
+};
+
 export const getSingleJob = async (
   id
 ) => {
@@ -20,6 +33,11 @@ export const getSingleJob = async (
     `/jobs/${id}`
   );
 
+  return response.data;
+};
+
+export const createJob = async (jobData) => {
+  const response = await api.post("/jobs", jobData);
   return response.data;
 };
 
