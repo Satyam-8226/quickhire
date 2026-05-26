@@ -14,8 +14,10 @@ import { protect, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
+// Public Routes - general list
+router.get('/', getAllJobs);
 
-// Public Routes
+// Protected Routes with specific paths (MUST come before /:id)
 router.get(
   '/my-jobs',
   protect,
@@ -23,24 +25,23 @@ router.get(
   getMyJobs
 );
 
-router.get('/', getAllJobs);
 router.get(
   '/stats',
   protect,
   authorizeRoles('recruiter', 'admin'),
   getRecruiterStats
 );
+
+// Public Route - single job (MUST come after specific paths)
 router.get('/:id', getJobById);
 
-
-// Protected Route
+// Protected Routes - create, update, delete
 router.post(
   '/',
   protect,
   authorizeRoles('recruiter', 'admin'),
   createJob
 );
-
 
 router.put(
   '/:id',

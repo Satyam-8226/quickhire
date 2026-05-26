@@ -8,34 +8,93 @@ import ErrorResponse from '../utils/errorResponse.js';
 // @route   POST /api/jobs
 // @access  Private (Recruiter/Admin)
 export const createJob = asyncHandler(async (req, res) => {
-  const {
-    title,
-    company,
-    location,
-    jobType,
-    salary,
-    description,
-    requirements,
-    skills,
-  } = req.body;
+  try {
+    console.log('===== CREATE JOB DEBUG =====');
+    console.log('Request Body:', JSON.stringify(req.body, null, 2));
+    console.log('User:', req.user ? { id: req.user._id, role: req.user.role } : 'No user');
 
-  const job = await Job.create({
-    title,
-    company,
-    location,
-    jobType,
-    salary,
-    description,
-    requirements,
-    skills,
-    createdBy: req.user._id,
-  });
+    const {
+      title,
+      company,
+      location,
+      jobType,
+      salary,
+      description,
+      requirements,
+      skills,
+    } = req.body;
 
-  res.status(201).json({
-    success: true,
-    message: 'Job created successfully',
-    job,
-  });
+    // Validation logging
+    console.log('Destructured values:', {
+      title,
+      company,
+      location,
+      jobType,
+      salary: { value: salary, type: typeof salary },
+      description,
+      requirements: { value: requirements, type: Array.isArray(requirements) ? 'array' : typeof requirements },
+      skills,
+    });
+
+    // Validate required fields
+    if (!title) throw new ErrorResponse('Title is required', 400);
+    if (!company) throw new ErrorResponse('Company is required', 400);
+    if (!location) throw new ErrorResponse('Location is required', 400);
+    if (!jobType) throw new ErrorResponse('Job type is required', 400);
+    if (salary === undefined || salary === null || salary === '') throw new ErrorResponse('Salary is required', 400);
+    if (!description) throw new ErrorResponse('Description is required', 400);
+    if (!requirements || requirements.length === 0) throw new ErrorResponse('Requirements are required', 400);
+
+    // Ensure salary is a number
+    const numSalary = Number(salary);
+    if (isNaN(numSalary)) throw new ErrorResponse('Salary must be a valid number', 400);
+
+    // Ensure requirements is an array
+    const reqArray = Array.isArray(requirements) ? requirements : (requirements ? [requirements] : []);
+    if (reqArray.length === 0) throw new ErrorResponse('At least one requirement is required', 400);
+
+    console.log('Validation passed. Creating job with:', {
+      title,
+      company,
+      location,
+      jobType,
+      salary: numSalary,
+      description,
+      requirements: reqArray,
+      createdBy: req.user._id,
+    });
+
+    const job = await Job.create({
+      title,
+      company,
+      location,
+      jobType,
+      salary: numSalary,
+      description,
+      requirements: reqArray,
+      skills: skills || [],
+      createdBy: req.user._id,
+    });
+
+    console.log('Job created successfully:', job._id);
+    console.log('===== END DEBUG =====');
+
+    res.status(201).json({
+      success: true,
+      message: 'Job created successfully',
+      job,
+    });
+  } catch (error) {
+    console.error('===== CREATE JOB ERROR =====');
+    console.error('Error Type:', error.constructor.name);
+    console.error('Error Message:', error.message);
+    console.error('Error Stack:', error.stack);
+    if (error.errors) {
+      console.error('Validation Errors:', error.errors);
+    }
+    console.error('===== END ERROR =====');
+    throw error;
+  }
 });
 
 

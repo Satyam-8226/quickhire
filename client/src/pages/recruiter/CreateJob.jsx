@@ -14,7 +14,7 @@ const CreateJob = () => {
     title: "",
     company: "",
     location: "",
-    type: "",
+    jobType: "",
     salary: "",
     description: "",
     requirements: "",
@@ -33,21 +33,27 @@ const CreateJob = () => {
     try {
       setLoading(true);
 
-      const jobData = {
+      const payload = {
         ...formData,
-        jobType: formData.type,
-        salary: formData.salary ? Number(formData.salary) : 0,
+
+        salary: formData.salary.trim(),
+
         requirements: formData.requirements
-          .split('\n')
-          .filter(r => r.trim()),
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
       };
 
-      await createJob(jobData);
+      await createJob(payload);
 
-      toast.success("Job created successfully");
+      toast.success(
+        "Job created successfully"
+      );
 
       navigate("/recruiter/jobs");
     } catch (error) {
+      console.log(error);
+
       toast.error(
         error.response?.data?.message ||
           "Failed to create job"

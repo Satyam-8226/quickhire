@@ -67,8 +67,8 @@ const JobForm = ({
           </label>
 
           <select
-            name="type"
-            value={formData.type}
+            name="jobType"
+            value={formData.jobType}
             onChange={handleChange}
             className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black"
             required

@@ -145,7 +145,7 @@ export const getMyApplications = asyncHandler(
   async (req, res) => {
     const applications =
       await Application.find({
-        candidate: req.user._id,
+        applicant: req.user._id,
       }).populate(
         "job"
       );
