@@ -30,7 +30,11 @@ app.use(express.json());
 app.use(helmet());
 
 // Prevent MongoDB injection attacks
-app.use(mongoSanitize());
+// app.use(
+//   mongoSanitize({
+//     replaceWith: "_",
+//   })
+// );
 
 // Prevent HTTP parameter pollution
 app.use(hpp());
