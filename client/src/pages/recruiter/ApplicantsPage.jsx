@@ -208,7 +208,7 @@ const ApplicantsPage = () => {
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <User className="w-8 h-8 text-gray-400" />
                   </div>
                   <div>
