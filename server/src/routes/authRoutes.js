@@ -6,9 +6,17 @@ import { validateRegister, validateLogin } from "../validators/authValidator.js"
 const router = express.Router();
 
 // Public
-router.post("/register", validateRegister, registerUser);
-router.post("/login", validateLogin, loginUser);
+router.post(
+  "/register",
+  validateRegister,
+  registerUser
+);
 
+router.post(
+  "/login",
+  validateLogin,
+  loginUser
+);
 // Protected
 router.get("/me", protect, getMe);
 

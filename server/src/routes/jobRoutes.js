@@ -12,6 +12,8 @@ import {
 
 import { protect, authorizeRoles } from '../middlewares/authMiddleware.js';
 
+import { validateJob } from '../validators/jobValidator.js';
+
 const router = express.Router();
 
 // Public Routes - general list
@@ -40,6 +42,7 @@ router.post(
   '/',
   protect,
   authorizeRoles('recruiter', 'admin'),
+  validateJob,
   createJob
 );
 
@@ -47,6 +50,7 @@ router.put(
   '/:id',
   protect,
   authorizeRoles('recruiter', 'admin'),
+  validateJob,
   updateJob
 );
 
