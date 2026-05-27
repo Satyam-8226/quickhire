@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 
 import { useAuth } from "../../context/AuthContext";
 
+import { uploadResume } from "../../api/applicationApi";
+
 import {
   Upload,
   FileText,
@@ -67,13 +69,7 @@ const Resume = () => {
           file
         );
 
-        /*
-          TODO:
-          Replace with actual API integration
-
-          Example:
-          await uploadResume(formData);
-        */
+        await uploadResume(formData);
 
         toast.success(
           "Resume uploaded successfully"

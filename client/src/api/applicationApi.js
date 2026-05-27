@@ -35,3 +35,17 @@ export const updateApplicationStatus =
 
     return response.data;
   };
+
+export const uploadResume = async (formData) => {
+  const response = await api.post(
+    "/applications/upload-resume",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return response.data;
+};

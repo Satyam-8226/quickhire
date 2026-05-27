@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import API from "../../api/axios";
+import api from "../../api/axios";
 
 import { useAuth } from "../../context/AuthContext";
 
@@ -35,7 +35,7 @@ function Login() {
 
       setLoading(true);
 
-      const response = await API.post(
+      const response = await api.post(
         "/auth/login",
         formData
       );

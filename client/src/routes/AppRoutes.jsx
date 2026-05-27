@@ -1,26 +1,61 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
+
+
+// ===============================
+// LAYOUTS
+// ===============================
 
 import MainLayout from "../layouts/MainLayout";
+import CandidateLayout from "../layouts/CandidateLayout";
+import RecruiterLayout from "../layouts/RecruiterLayout";
+
+
+// ===============================
+// PUBLIC PAGES
+// ===============================
 
 import Home from "../pages/public/Home";
-import Jobs from "../pages/public/JobPage";
-import JobDetails from "../pages/public/JobDetails";
+import JobsPage from "../pages/public/JobsPage";
+import JobDetailsPage from "../pages/public/JobDetailsPage";
+
+
+// ===============================
+// AUTH PAGES
+// ===============================
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 
-import ProtectedRoute from "./ProtectedRoute";
-import CandidateDashboard from "../pages/candidate/CandidateDashBoard";
-import RecruiterDashboard from "../pages/recruiter/RecruiterDashBoard";
 
-import CandidateLayout from "../layouts/CandidateLayout";
+// ===============================
+// CANDIDATE PAGES
+// ===============================
+
+import CandidateDashboard from "../pages/candidate/CandidateDashboard";
 import Applications from "../pages/candidate/Applications";
 import Resume from "../pages/candidate/Resume";
 
-import RecruiterLayout from "../layouts/RecruiterLayout";
+
+// ===============================
+// RECRUITER PAGES
+// ===============================
+
+import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
 import RecruiterJobs from "../pages/recruiter/RecruiterJobs";
 import CreateJob from "../pages/recruiter/CreateJob";
 import EditJob from "../pages/recruiter/EditJob";
+
+
+// ===============================
+// PROTECTED ROUTES
+// ===============================
+
+import ProtectedRoute from "./ProtectedRoute";
+
 
 function AppRoutes() {
   return (
@@ -28,22 +63,53 @@ function AppRoutes() {
       <MainLayout>
         <Routes>
 
-          <Route path="/" element={<Home />} />
-          <Route path="/jobs" element={<Jobs />} />
-          <Route path="/jobs/:id" element={<JobDetails />} />
+          {/* ===================== */}
+          {/* PUBLIC ROUTES */}
+          {/* ===================== */}
 
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route
+            path="/"
+            element={<Home />}
+          />
+
+          <Route
+            path="/jobs"
+            element={<JobsPage />}
+          />
+
+          <Route
+            path="/jobs/:id"
+            element={<JobDetailsPage />}
+          />
+
+          {/* ===================== */}
+          {/* AUTH ROUTES */}
+          {/* ===================== */}
+
+          <Route
+            path="/login"
+            element={<Login />}
+          />
+
+          <Route
+            path="/register"
+            element={<Register />}
+          />
+
+          {/* ===================== */}
+          {/* CANDIDATE ROUTES */}
+          {/* ===================== */}
 
           <Route
             path="/candidate"
             element={
-              <ProtectedRoute allowedRoles={["candidate"]}>
+              <ProtectedRoute
+                allowedRoles={["candidate"]}
+              >
                 <CandidateLayout />
               </ProtectedRoute>
             }
           >
-
             <Route
               path="dashboard"
               element={<CandidateDashboard />}
@@ -58,18 +124,22 @@ function AppRoutes() {
               path="resume"
               element={<Resume />}
             />
-
           </Route>
+
+          {/* ===================== */}
+          {/* RECRUITER ROUTES */}
+          {/* ===================== */}
 
           <Route
             path="/recruiter"
             element={
-              <ProtectedRoute allowedRoles={["recruiter"]}>
+              <ProtectedRoute
+                allowedRoles={["recruiter"]}
+              >
                 <RecruiterLayout />
               </ProtectedRoute>
             }
           >
-
             <Route
               path="dashboard"
               element={<RecruiterDashboard />}
@@ -89,7 +159,6 @@ function AppRoutes() {
               path="edit-job/:id"
               element={<EditJob />}
             />
-
           </Route>
 
         </Routes>

@@ -1,16 +1,25 @@
 import api from "./axios";
 
-export const getAllJobs = async (
-  params = {}
-) => {
-  const response = await api.get(
-    "/jobs",
-    {
-      params,
-    }
+export const getAllJobs = async ({
+  keyword = "",
+  location = "",
+  jobType = "",
+  page = 1,
+  limit = 10,
+}) => {
+  const query = new URLSearchParams({
+    keyword,
+    location,
+    jobType,
+    page,
+    limit,
+  });
+
+  const { data } = await api.get(
+    `/jobs?${query.toString()}`
   );
 
-  return response.data;
+  return data;
 };
 
 export const getMyJobs = async (
