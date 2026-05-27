@@ -118,45 +118,98 @@ export const getMyJobs = asyncHandler(async (req, res) => {
 // @route   GET /api/jobs
 // @access  Public
 export const getAllJobs = asyncHandler(async (req, res) => {
-  const keyword = req.query.keyword || '';
-  const location = req.query.location || '';
-  const jobType = req.query.jobType || '';
+  // ===============================
+  // QUERY PARAMS
+  // ===============================
+
+  const keyword = req.query.keyword || "";
+  const location = req.query.location || "";
+  const jobType = req.query.jobType || "";
 
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
   const skip = (page - 1) * limit;
 
-  const query = {
-    title: {
-      $regex: keyword,
-      $options: 'i',
-    },
+  
+  // ===============================
+  // DYNAMIC FILTER QUERY
+  // ===============================
 
-    location: {
+  const query = {};
+
+  // Keyword Search (title + company)
+  if (keyword) {
+    query.$or = [
+      {
+        title: {
+          $regex: keyword,
+          $options: "i",
+        },
+      },
+      {
+        company: {
+          $regex: keyword,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  // Location Filter
+  if (location) {
+    query.location = {
       $regex: location,
-      $options: 'i',
-    },
+      $options: "i",
+    };
+  }
 
-    jobType: {
+  // Job Type Filter
+  if (jobType) {
+    query.jobType = {
       $regex: jobType,
-      $options: 'i',
-    },
-  };
+      $options: "i",
+    };
+  }
+
+
+  // ===============================
+  // TOTAL JOB COUNT
+  // ===============================
 
   const totalJobs = await Job.countDocuments(query);
+
+
+  // ===============================
+  // FETCH JOBS
+  // ===============================
 
   const jobs = await Job.find(query)
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
 
+
+  // ===============================
+  // RESPONSE
+  // ===============================
+
   res.status(200).json({
     success: true,
+
+    message:
+      jobs.length > 0
+        ? "Jobs fetched successfully"
+        : "No jobs found",
+
     currentPage: page,
+
     totalPages: Math.ceil(totalJobs / limit),
+
     totalJobs,
+
     count: jobs.length,
+
     jobs,
   });
 });

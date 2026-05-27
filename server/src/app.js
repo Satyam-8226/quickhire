@@ -1,23 +1,74 @@
 import express from "express";
 import cors from "cors";
+
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import mongoSanitize from "express-mongo-sanitize";
+import hpp from "hpp";
+
 import authRoutes from "./routes/authRoutes.js";
-import jobRoutes from './routes/jobRoutes.js';
-import applicationRoutes from './routes/applicationRoutes.js';
+import jobRoutes from "./routes/jobRoutes.js";
+import applicationRoutes from "./routes/applicationRoutes.js";
 
 const app = express();
 
-// Global middlewares
+
+// ===============================
+// CORE MIDDLEWARES
+// ===============================
+
 app.use(cors());
+
 app.use(express.json());
 
-// Routes
-app.use("/api/auth", authRoutes);
-app.use('/api/jobs', jobRoutes);
-app.use('/api/applications', applicationRoutes);
 
-// Simple health check
-app.get("/", (req, res) => {
-  res.json({ success: true, message: "QuickHire AI API is running" });
+// ===============================
+// SECURITY MIDDLEWARES
+// ===============================
+
+// Secure HTTP headers
+app.use(helmet());
+
+// Prevent MongoDB injection attacks
+app.use(mongoSanitize());
+
+// Prevent HTTP parameter pollution
+app.use(hpp());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: {
+    success: false,
+    message: "Too many requests, please try again later",
+  },
 });
+
+app.use(limiter);
+
+
+// ===============================
+// HEALTH CHECK ROUTE
+// ===============================
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "QuickHire AI API is running",
+  });
+});
+
+
+// ===============================
+// API ROUTES
+// ===============================
+
+app.use("/api/auth", authRoutes);
+
+app.use("/api/jobs", jobRoutes);
+
+app.use("/api/applications", applicationRoutes);
+
 
 export default app;
