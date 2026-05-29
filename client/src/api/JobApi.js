@@ -71,3 +71,8 @@ export const deleteJob = async (
 
   return response.data;
 };
+
+export const getRecruiterStats = async () => {
+  const { data } = await api.get("/jobs/stats");
+  return data;
+};

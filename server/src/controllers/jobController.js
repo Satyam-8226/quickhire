@@ -104,12 +104,41 @@ export const createJob = asyncHandler(async (req, res) => {
 export const getMyJobs = asyncHandler(async (req, res) => {
   const jobs = await Job.find({
     createdBy: req.user._id,
-  }).sort({ createdAt: -1 });
+  })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const jobIds = jobs.map((job) => job._id);
+
+  const applicationCounts = await Application.aggregate([
+    {
+      $match: {
+        job: { $in: jobIds },
+      },
+    },
+    {
+      $group: {
+        _id: '$job',
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const countsByJobId = applicationCounts.reduce((acc, item) => {
+    acc[item._id.toString()] = item.count;
+    return acc;
+  }, {});
+
+  const jobsWithApplicantCount = jobs.map((job) => ({
+    ...job,
+    applicantCount:
+      countsByJobId[job._id.toString()] || 0,
+  }));
 
   res.status(200).json({
     success: true,
-    count: jobs.length,
-    jobs,
+    count: jobsWithApplicantCount.length,
+    jobs: jobsWithApplicantCount,
   });
 });
 
@@ -294,23 +323,49 @@ export const deleteJob = asyncHandler(async (req, res) => {
 // @route   GET /api/jobs/stats
 // @access  Private
 export const getRecruiterStats = asyncHandler(async (req, res) => {
-  const totalJobs = await Job.countDocuments({
-    createdBy: req.user._id,
-  });
+  const recruiterId = req.user._id;
 
-  const recruiterJobs = await Job.find({
-    createdBy: req.user._id,
-  });
+  const jobs = await Job.find({
+    createdBy: recruiterId,
+  }).select("_id");
 
-  const jobIds = recruiterJobs.map(job => job._id);
+  const jobIds = jobs.map((job) => job._id);
 
-  const totalApplications = await Application.countDocuments({
+  const totalJobs = jobs.length;
+
+  const totalApplicants = await Application.countDocuments({
     job: { $in: jobIds },
+  });
+
+  const pending = await Application.countDocuments({
+    job: { $in: jobIds },
+    status: "pending",
+  });
+
+  const reviewed = await Application.countDocuments({
+    job: { $in: jobIds },
+    status: "reviewed",
+  });
+
+  const accepted = await Application.countDocuments({
+    job: { $in: jobIds },
+    status: "accepted",
+  });
+
+  const rejected = await Application.countDocuments({
+    job: { $in: jobIds },
+    status: "rejected",
   });
 
   res.status(200).json({
     success: true,
-    totalJobs,
-    totalApplications,
+    stats: {
+      totalJobs,
+      totalApplicants,
+      pending,
+      reviewed,
+      accepted,
+      rejected,
+    },
   });
 });

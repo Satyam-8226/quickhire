@@ -46,10 +46,10 @@ quickhire-ai/
 │       ├── config/            # Database and Cloudinary config
 │       ├── controllers/       # Route handlers
 │       ├── middlewares/       # Auth, error handling, logging
- │     ├── models/             # Mongoose schemas
- │     ├── routes/             # API route definitions
- │     ├── utils/              # Helpers and token generation
- │     └── app.js              # Express app setup
+│       ├── models/            # Mongoose schemas
+│       ├── routes/            # API route definitions
+│       ├── utils/             # Helpers and token generation
+│   └── app.js                 # Express app setup
 └── README.md                  # Project documentation
 ```
 

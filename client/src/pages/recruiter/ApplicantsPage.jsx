@@ -21,6 +21,8 @@ import {
   User,
 } from "lucide-react";
 
+import ApplicantSkeleton from "../../components/skeletons/ApplicationSkeleton";
+
 const ApplicantsPage = () => {
   const { id } = useParams();
 
@@ -156,7 +158,11 @@ const ApplicantsPage = () => {
 
   if (loading) {
     return (
-      <Loader message="Loading applicants..." />
+      <>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <ApplicantSkeleton key={index} />
+        ))}
+      </>
     );
   }
 
