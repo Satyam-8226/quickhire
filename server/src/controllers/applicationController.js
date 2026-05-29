@@ -113,7 +113,8 @@ export const getApplicantsForJob = asyncHandler(async (req, res) => {
     applications = await Application.find({
       job: req.params.jobId,
     })
-      .populate('applicant', 'name email role')
+      .populate('applicant', 'name email resume createdAt')
+      .populate('job', 'title company')
       .sort({ createdAt: -1 });
   } catch (err) {
     logDatabaseError('find applications for job', err, req);

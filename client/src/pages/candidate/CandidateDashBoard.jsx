@@ -1,272 +1,252 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react"
 
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom"
 
-import { getMyApplications } from "../../api/applicationApi";
+import { useAuth } from "../../context/AuthContext"
+import { getMyApplications } from "../../api/applicationApi"
 
-import Loader from "../../components/common/Loader";
-import ErrorState from "../../components/common/ErrorState";
-import EmptyState from "../../components/common/EmptyState";
+import Loader from "../../components/common/Loader"
+import ErrorState from "../../components/common/ErrorState"
+import EmptyState from "../../components/ui/EmptyState"
+import PageHeader from "../../components/ui/PageHeader"
+import SectionCard from "../../components/ui/SectionCard"
+import StatCard from "../../components/ui/StatCard"
+import StatusBadge from "../../components/ui/StatusBadge"
 
 import {
   ClipboardList,
   Briefcase,
   FileText,
   CheckCircle2,
-} from "lucide-react";
+  Sparkles,
+} from "lucide-react"
 
 const CandidateDashboard = () => {
-  const [applications, setApplications] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
+  const { user } = useAuth()
+  const [applications, setApplications] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
   useEffect(() => {
-    fetchApplications();
-  }, []);
+    fetchApplications()
+  }, [])
 
   const fetchApplications = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true)
+      setError("")
 
-      const data =
-        await getMyApplications();
-
-      setApplications(
-        data?.applications || []
-      );
+      const data = await getMyApplications()
+      setApplications(data?.applications || [])
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Failed to fetch dashboard data"
-      );
+          "Failed to load your dashboard data"
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const totalApplications =
-    applications.length;
+  const applicationCounts = useMemo(
+    () =>
+      applications.reduce(
+        (counts, application) => {
+          const key = application.status || "pending"
+          counts[key] = (counts[key] || 0) + 1
+          return counts
+        },
+        {
+          pending: 0,
+          reviewed: 0,
+          accepted: 0,
+          rejected: 0,
+        }
+      ),
+    [applications]
+  )
 
-  const acceptedApplications =
-    applications.filter(
-      (application) =>
-        application.status ===
-        "accepted"
-    ).length;
-
-  const pendingApplications =
-    applications.filter(
-      (application) =>
-        application.status ===
-        "pending"
-    ).length;
-
-  const recentApplications =
-    applications.slice(0, 5);
-
-  const getStatusStyles = (
-    status
-  ) => {
-    switch (status) {
-      case "accepted":
-        return "bg-green-100 text-green-700";
-
-      case "rejected":
-        return "bg-red-100 text-red-700";
-
-      case "reviewed":
-        return "bg-blue-100 text-blue-700";
-
-      default:
-        return "bg-yellow-100 text-yellow-700";
-    }
-  };
+  const recentApplications = useMemo(
+    () => applications.slice(0, 5),
+    [applications]
+  )
 
   if (loading) {
-    return (
-      <Loader message="Loading dashboard..." />
-    );
+    return <Loader message="Loading dashboard..." />
   }
 
   if (error) {
     return (
       <ErrorState
-        title="Failed to load dashboard"
+        title="Dashboard error"
         message={error}
         onRetry={fetchApplications}
       />
-    );
+    )
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
-          Candidate Dashboard
-        </h1>
-
-        <p className="text-gray-600">
-          Track your applications and monitor
-          your hiring progress
-        </p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {/* Total Applications */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-black">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase text-gray-500 mb-2">
-                Total Applications
-              </p>
-
-              <p className="text-3xl font-bold text-gray-900">
-                {totalApplications}
-              </p>
-            </div>
-
-            <ClipboardList className="w-10 h-10 text-gray-300" />
-          </div>
-        </div>
-
-        {/* Pending */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-yellow-400">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase text-gray-500 mb-2">
-                Pending Review
-              </p>
-
-              <p className="text-3xl font-bold text-gray-900">
-                {pendingApplications}
-              </p>
-            </div>
-
-            <FileText className="w-10 h-10 text-gray-300" />
-          </div>
-        </div>
-
-        {/* Accepted */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase text-gray-500 mb-2">
-                Accepted Offers
-              </p>
-
-              <p className="text-3xl font-bold text-gray-900">
-                {acceptedApplications}
-              </p>
-            </div>
-
-            <CheckCircle2 className="w-10 h-10 text-gray-300" />
-          </div>
-        </div>
-
-        {/* Browse Jobs */}
-        <Link
-          to="/jobs"
-          className="bg-black text-white rounded-xl shadow-sm p-6 flex items-center justify-between hover:opacity-90 transition"
-        >
-          <div>
-            <p className="text-sm font-semibold uppercase text-white/70 mb-2">
-              Explore
-            </p>
-
-            <p className="text-xl font-bold">
-              Browse Jobs
-            </p>
-          </div>
-
-          <Briefcase className="w-10 h-10 text-white/40" />
-        </Link>
-      </div>
-
-      {/* Recent Applications */}
-      <div className="bg-white rounded-xl shadow-sm p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Recent Applications
-          </h2>
-
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <PageHeader
+        title="Candidate Dashboard"
+        description="Track applications, review hiring updates, and stay ahead with an easy view of your job search progress."
+        cta={
           <Link
-            to="/candidate/applications"
-            className="text-black font-medium hover:underline"
+            to="/jobs"
+            className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-900"
           >
-            View All
+            Browse Jobs
           </Link>
-        </div>
+        }
+      />
 
-        {recentApplications.length ===
-        0 ? (
-          <EmptyState
-            title="No applications yet"
-            message="You haven't applied to any jobs yet. Start exploring opportunities now."
-          />
-        ) : (
-          <div className="space-y-4">
-            {recentApplications.map(
-              (application) => (
-                <div
-                  key={application._id}
-                  className="border rounded-xl p-5 hover:shadow-sm transition"
-                >
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {application.job
-                          ?.title ||
-                          "Untitled Job"}
-                      </h3>
+      <div className="grid gap-6 xl:grid-cols-[1.7fr_0.9fr]">
+        <div className="space-y-6">
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard
+              title="Total applications"
+              value={applications.length}
+              icon={<ClipboardList className="w-5 h-5" />}
+              description="Applications sent so far"
+            />
+            <StatCard
+              title="Pending review"
+              value={applicationCounts.pending}
+              icon={<FileText className="w-5 h-5" />}
+              description="Waiting on recruiter feedback"
+            />
+            <StatCard
+              title="Accepted offers"
+              value={applicationCounts.accepted}
+              icon={<CheckCircle2 className="w-5 h-5" />}
+              description="Offers you received"
+            />
+            <StatCard
+              title="Resume status"
+              value={user?.resume ? "Uploaded" : "Missing"}
+              icon={<Sparkles className="w-5 h-5" />}
+              description={
+                user?.resume
+                  ? "Ready for applications"
+                  : "Upload a resume"
+              }
+            />
+          </div>
 
-                      <p className="text-gray-600 text-sm">
-                        {application.job
-                          ?.company ||
-                          "Unknown Company"}
-                      </p>
+          <SectionCard
+            title="Recent applications"
+            subtitle="See your latest activity and application progress."
+            actions={
+              <Link
+                to="/candidate/applications"
+                className="text-sm font-semibold text-black transition hover:text-gray-700"
+              >
+                View all
+              </Link>
+            }
+          >
+            {recentApplications.length === 0 ? (
+              <EmptyState
+                title="No applications yet"
+                message="You haven't applied to any jobs yet. Start browsing openings and submit your first application."
+              />
+            ) : (
+              <div className="space-y-4">
+                {recentApplications.map((application) => (
+                  <div
+                    key={application._id}
+                    className="rounded-3xl border border-gray-200 p-5 shadow-sm transition hover:shadow-md"
+                  >
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {application.job?.title || "Untitled Job"}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {application.job?.company || "Unknown Company"}
+                        </p>
+                      </div>
+                      <StatusBadge status={application.status} />
                     </div>
 
-                    <span
-                      className={`w-fit text-xs font-semibold uppercase px-3 py-1 rounded-full ${getStatusStyles(
-                        application.status
-                      )}`}
-                    >
-                      {
-                        application.status
-                      }
-                    </span>
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-sm text-gray-600">
+                      <p>
+                        Applied on {" "}
+                        {new Date(application.createdAt).toLocaleDateString()}
+                      </p>
+                      <p>{application.job?.location || "Location not specified"}</p>
+                    </div>
                   </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-gray-600">
-                    <p>
-                      Applied on{" "}
-                      {new Date(
-                        application.createdAt
-                      ).toLocaleDateString()}
-                    </p>
-
-                    <p>
-                      {application.job
-                        ?.location ||
-                        "Location not specified"}
-                    </p>
-                  </div>
-                </div>
-              )
+                ))}
+              </div>
             )}
-          </div>
-        )}
+          </SectionCard>
+        </div>
+
+        <div className="space-y-6">
+          <SectionCard
+            title="Profile summary"
+            subtitle={`Welcome back, ${user?.name?.split(" ")[0] || "candidate"}!`}
+          >
+            <div className="space-y-4">
+              <div className="rounded-3xl bg-gray-50 p-5">
+                <p className="text-sm text-gray-500">Account</p>
+                <p className="mt-2 text-lg font-semibold text-gray-900">
+                  {user?.name || "Candidate"}
+                </p>
+                <p className="text-sm text-gray-500">{user?.email || "No email available"}</p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Link
+                  to="/candidate/resume"
+                  className="inline-flex items-center justify-center rounded-3xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 transition hover:border-gray-300"
+                >
+                  Manage resume
+                </Link>
+                <Link
+                  to="/candidate/applications"
+                  className="inline-flex items-center justify-center rounded-3xl bg-black px-4 py-3 text-sm font-semibold text-white transition hover:bg-gray-900"
+                >
+                  View applications
+                </Link>
+              </div>
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            title="Getting started"
+            subtitle="Quick actions to keep your profile active."
+          >
+            <div className="space-y-4">
+              <div className="rounded-3xl border border-gray-200 bg-white p-5">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.3em] text-gray-500">
+                      Latest update
+                    </p>
+                    <p className="mt-2 text-base text-gray-800">
+                      {user?.resume ? "Your resume is ready for applications." : "Upload your resume to increase visibility."}
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-black px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
+                    {user?.resume ? "Active" : "Action needed"}
+                  </span>
+                </div>
+              </div>
+
+              <Link
+                to="/jobs"
+                className="block rounded-3xl bg-black px-5 py-4 text-center text-sm font-semibold text-white transition hover:bg-gray-900"
+              >
+                Explore new jobs
+              </Link>
+            </div>
+          </SectionCard>
+        </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
 export default CandidateDashboard;

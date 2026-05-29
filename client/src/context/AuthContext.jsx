@@ -54,10 +54,11 @@ function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         token,
         loading,
         login,
-        logout
+        logout,
       }}
     >
       {children}

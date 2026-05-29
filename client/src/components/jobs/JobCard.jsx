@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { MapPin, Briefcase, DollarSign } from "lucide-react";
 
-const JobCard = ({ job, showActions = false, onEdit = null, onDelete = null }) => {
+const JobCard = ({ job, showActions = false, onEdit = null, onDelete = null, onViewApplicants = null }) => {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition">
       {/* Header */}
@@ -47,6 +47,14 @@ const JobCard = ({ job, showActions = false, onEdit = null, onDelete = null }) =
         </Link>
         {showActions && (
           <>
+            {onViewApplicants && (
+              <button
+                onClick={() => onViewApplicants(job._id)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition"
+              >
+                View Applicants
+              </button>
+            )}
             {onEdit && (
               <button
                 onClick={() => onEdit(job._id)}

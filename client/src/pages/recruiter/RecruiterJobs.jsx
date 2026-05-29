@@ -118,6 +118,7 @@ function RecruiterJobs() {
               key={job._id}
               job={job}
               showActions={true}
+              onViewApplicants={(jobId) => navigate(`/recruiter/jobs/${jobId}/applicants`)}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />

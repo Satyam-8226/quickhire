@@ -48,6 +48,7 @@ import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
 import RecruiterJobs from "../pages/recruiter/RecruiterJobs";
 import CreateJob from "../pages/recruiter/CreateJob";
 import EditJob from "../pages/recruiter/EditJob";
+import ApplicantsPage from "../pages/recruiter/ApplicantsPage";
 
 
 // ===============================
@@ -148,6 +149,11 @@ function AppRoutes() {
             <Route
               path="jobs"
               element={<RecruiterJobs />}
+            />
+
+            <Route
+              path="jobs/:id/applicants"
+              element={<ApplicantsPage />}
             />
 
             <Route

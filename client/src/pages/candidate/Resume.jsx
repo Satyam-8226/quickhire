@@ -1,209 +1,191 @@
 import { useState } from "react";
 
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../../context/AuthContext";
-
 import { uploadResume } from "../../api/applicationApi";
+
+import PageHeader from "../../components/ui/PageHeader";
+import SectionCard from "../../components/ui/SectionCard";
+import StatusBadge from "../../components/ui/StatusBadge";
 
 import {
   Upload,
   FileText,
-  CheckCircle2,
 } from "lucide-react";
 
 const Resume = () => {
-  const { user } = useAuth();
-
-  const [loading, setLoading] =
-    useState(false);
+  const { user, setUser } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [selectedFileName, setSelectedFileName] = useState("");
+  const [resumeUrl, setResumeUrl] = useState(user?.resume || "");
 
   const validateFile = (file) => {
     if (!file) {
-      return "Please select a file";
+      return "Please select a file.";
     }
 
     const isPDF =
       file.type === "application/pdf" ||
-      file.name
-        .toLowerCase()
-        .endsWith(".pdf");
+      file.name.toLowerCase().endsWith(".pdf");
 
     if (!isPDF) {
-      return "Only PDF files are allowed";
+      return "Only PDF files are allowed.";
     }
 
-    const maxSize =
-      5 * 1024 * 1024;
-
+    const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      return "File size must be less than 5MB";
+      return "File size must be less than 5MB.";
     }
 
     return null;
   };
 
-  const handleFileUpload =
-    async (e) => {
-      const file =
-        e.target.files?.[0];
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    const validationError = validateFile(file);
 
-      const validationError =
-        validateFile(file);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
 
-      if (validationError) {
-        toast.error(
-          validationError
-        );
-        return;
-      }
+    setSelectedFileName(file.name);
 
-      try {
-        setLoading(true);
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("resume", file);
 
-        const formData =
-          new FormData();
+      const response = await uploadResume(formData);
+      const updatedResumeUrl = response?.resumeUrl || user?.resume || "";
 
-        formData.append(
-          "resume",
-          file
-        );
+      const updatedUser = {
+        ...user,
+        resume: updatedResumeUrl,
+      };
 
-        await uploadResume(formData);
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setResumeUrl(updatedResumeUrl);
 
-        toast.success(
-          "Resume uploaded successfully"
-        );
-      } catch (error) {
-        toast.error(
-          error.response?.data
-            ?.message ||
-            "Failed to upload resume"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+      toast.success("Resume uploaded successfully.");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to upload resume."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">
-          My Resume
-        </h1>
-
-        <p className="text-gray-600">
-          Upload and manage your resume for
-          job applications
-        </p>
-      </div>
-
-      {/* Upload Card */}
-      <div className="bg-white rounded-2xl shadow-sm p-8 mb-8">
-        <div className="border-2 border-dashed border-gray-300 rounded-2xl p-10 text-center hover:border-black transition">
-          <div className="flex justify-center mb-5">
-            <div className="bg-gray-100 p-4 rounded-full">
-              <Upload className="w-10 h-10 text-gray-600" />
-            </div>
-          </div>
-
-          <h2 className="text-2xl font-bold mb-3">
-            Upload Resume
-          </h2>
-
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Upload your latest resume in PDF
-            format to apply for jobs faster and
-            improve your recruiter visibility.
-          </p>
-
-          <input
-            type="file"
-            accept=".pdf"
-            id="resume-upload"
-            className="hidden"
-            disabled={loading}
-            onChange={
-              handleFileUpload
-            }
-          />
-
-          <label
-            htmlFor="resume-upload"
-            className="inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded-lg font-medium cursor-pointer hover:opacity-90 transition"
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <PageHeader
+        title="Resume Center"
+        description="Keep your resume up to date so recruiters always see your latest profile and you can apply with confidence."
+        cta={
+          <Link
+            to="/candidate/applications"
+            className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-900"
           >
-            <Upload className="w-5 h-5" />
+            View Applications
+          </Link>
+        }
+      />
 
-            {loading
-              ? "Uploading..."
-              : "Select PDF"}
-          </label>
-
-          <p className="text-xs text-gray-500 mt-4">
-            Only PDF files are supported
-            (Maximum size: 5MB)
-          </p>
-        </div>
-      </div>
-
-      {/* Resume Preview */}
-      {user?.resume ? (
-        <div className="bg-white rounded-2xl shadow-sm p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <CheckCircle2 className="w-6 h-6 text-green-500" />
-
-            <h2 className="text-2xl font-bold">
-              Current Resume
-            </h2>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-5 rounded-xl border bg-gray-50">
-            <div className="bg-white p-3 rounded-lg border">
-              <FileText className="w-8 h-8 text-gray-700" />
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <SectionCard
+          title="Upload Resume"
+          subtitle="Upload your latest resume in PDF format to keep your profile recruiter-ready."
+        >
+          <div className="rounded-3xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center transition hover:border-black">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white text-gray-700 shadow-sm">
+              <Upload className="h-10 w-10" />
             </div>
+            <p className="text-lg font-semibold text-gray-900 mb-3">
+              Select your latest resume
+            </p>
+            <p className="mx-auto max-w-md text-sm text-gray-600 mb-6">
+              PDF only, up to 5MB. Your upload will update the resume attached to all new applications.
+            </p>
 
-            <div className="flex-1">
-              <p className="font-semibold text-gray-900">
-                Resume.pdf
-              </p>
-
-              <p className="text-sm text-gray-600">
-                Resume uploaded successfully to
-                your profile
-              </p>
-            </div>
-
-            <a
-              href={user.resume}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-fit bg-black text-white px-5 py-2 rounded-lg hover:opacity-90 transition"
+            <input
+              type="file"
+              accept=".pdf"
+              id="resume-upload"
+              className="hidden"
+              disabled={loading}
+              onChange={handleFileUpload}
+            />
+            <label
+              htmlFor="resume-upload"
+              className="inline-flex items-center justify-center gap-3 rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-900 cursor-pointer"
             >
-              View Resume
-            </a>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
-          <div className="flex items-start gap-3">
-            <FileText className="w-6 h-6 text-blue-600 mt-1" />
+              <Upload className="h-4 w-4" />
+              {loading ? "Uploading..." : "Choose PDF"}
+            </label>
 
-            <div>
-              <h3 className="font-semibold text-blue-900 mb-1">
-                No Resume Uploaded
-              </h3>
-
-              <p className="text-blue-700 text-sm leading-relaxed">
-                Uploading your resume increases
-                your chances of getting noticed
-                by recruiters and helps you apply
-                to jobs more efficiently.
+            {selectedFileName && (
+              <p className="mt-4 text-sm text-gray-600">
+                Selected file: <span className="font-medium text-gray-900">{selectedFileName}</span>
               </p>
-            </div>
+            )}
           </div>
-        </div>
-      )}
+        </SectionCard>
+
+        <SectionCard
+          title="Current resume"
+          subtitle="Your uploaded resume is visible to recruiters for future applications."
+        >
+          <div className="space-y-6">
+            <div className="flex items-center justify-between gap-4 rounded-3xl border border-gray-200 bg-white p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-black text-white">
+                  <FileText className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Resume status</p>
+                  <p className="mt-1 text-lg font-semibold text-gray-900">
+                    {resumeUrl ? "Uploaded" : "No resume uploaded"}
+                  </p>
+                </div>
+              </div>
+              <StatusBadge status={resumeUrl ? "accepted" : "pending"} />
+            </div>
+
+            {resumeUrl ? (
+              <div className="rounded-3xl border border-gray-200 bg-gray-50 p-5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">Last resume</p>
+                    <p className="mt-1 text-base font-medium text-gray-900">
+                      {selectedFileName || "Resume.pdf"}
+                    </p>
+                  </div>
+                  <a
+                    href={resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-900"
+                  >
+                    View resume
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5">
+                <p className="text-sm font-semibold text-blue-900">No resume uploaded yet</p>
+                <p className="mt-2 text-sm text-blue-700">
+                  Upload a PDF to get your profile ready for recruiters and improve your application flow.
+                </p>
+              </div>
+            )}
+          </div>
+        </SectionCard>
+      </div>
     </div>
   );
 };
