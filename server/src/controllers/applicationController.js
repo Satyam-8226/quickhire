@@ -5,36 +5,75 @@ import cloudinary from '../config/cloudinary.js';
 import User from '../models/userModel.js';
 import ErrorResponse from '../utils/errorResponse.js';
 
+const getUserSummary = (user) => {
+  if (!user) return null;
+  return {
+    id: user._id,
+    email: user.email,
+    role: user.role,
+  };
+};
+
+const logDatabaseError = (operation, err, req) => {
+  console.error(`===== DB ERROR: ${operation} =====`);
+  console.error('Error:', err.message || err);
+  console.error('Request URL:', req.originalUrl);
+  console.error('Method:', req.method);
+  console.error('Params:', JSON.stringify(req.params));
+  console.error('Body:', JSON.stringify(req.body));
+  console.error('User:', getUserSummary(req.user));
+  console.error('===== END DB ERROR =====');
+};
 
 // @desc    Apply to job
 // @route   POST /api/applications/:jobId
 // @access  Private
 export const applyToJob = asyncHandler(async (req, res) => {
-  const job = await Job.findById(req.params.jobId);
+  console.info('applyToJob payload', {
+    params: req.params,
+    body: req.body,
+    user: getUserSummary(req.user),
+  });
+
+  let job;
+  try {
+    job = await Job.findById(req.params.jobId);
+  } catch (err) {
+    logDatabaseError('find job by id', err, req);
+    throw new ErrorResponse('Error fetching job details', 500);
+  }
 
   if (!job) {
     throw new ErrorResponse('Job not found', 404);
   }
 
-  // Check already applied
-  const alreadyApplied = await Application.findOne({
-    applicant: req.user._id,
-    job: req.params.jobId,
-  });
-
-  if (alreadyApplied) {
-    throw new ErrorResponse(
-      'Already applied to this job',
-      400
-    );
+  let alreadyApplied;
+  try {
+    alreadyApplied = await Application.findOne({
+      applicant: req.user._id,
+      job: req.params.jobId,
+    });
+  } catch (err) {
+    logDatabaseError('check duplicate application', err, req);
+    throw new ErrorResponse('Error checking existing application', 500);
   }
 
-  const application = await Application.create({
-    applicant: req.user._id,
-    job: req.params.jobId,
-    coverLetter: req.body.coverLetter || '',
-    resume: req.user.resume || '',
-  });
+  if (alreadyApplied) {
+    throw new ErrorResponse('Already applied to this job', 400);
+  }
+
+  let application;
+  try {
+    application = await Application.create({
+      applicant: req.user._id,
+      job: req.params.jobId,
+      coverLetter: req.body?.coverLetter || '',
+      resume: req.user.resume || '',
+    });
+  } catch (err) {
+    logDatabaseError('create application', err, req);
+    throw new ErrorResponse('Failed to create application', 500);
+  }
 
   res.status(201).json({
     success: true,
@@ -43,28 +82,43 @@ export const applyToJob = asyncHandler(async (req, res) => {
   });
 });
 
-
 // @desc    Get applicants for a job
 // @route   GET /api/applications/job/:jobId
 // @access  Private (Recruiter/Admin)
 export const getApplicantsForJob = asyncHandler(async (req, res) => {
-  const job = await Job.findById(req.params.jobId);
+  console.info('getApplicantsForJob payload', {
+    params: req.params,
+    body: req.body,
+    user: getUserSummary(req.user),
+  });
+
+  let job;
+  try {
+    job = await Job.findById(req.params.jobId);
+  } catch (err) {
+    logDatabaseError('find job by id', err, req);
+    throw new ErrorResponse('Error fetching job details', 500);
+  }
 
   if (!job) {
     throw new ErrorResponse('Job not found', 404);
   }
 
-  // Only creator can view applicants
   if (job.createdBy.toString() !== req.user._id.toString()) {
-    res.status(403);
-    throw new ErrorResponse('Not authorized', 403);
+    throw new ErrorResponse('Not authorized to view applicants', 403);
   }
 
-  const applications = await Application.find({
-    job: req.params.jobId,
-  })
-    .populate('applicant', 'name email role')
-    .sort({ createdAt: -1 });
+  let applications;
+  try {
+    applications = await Application.find({
+      job: req.params.jobId,
+    })
+      .populate('applicant', 'name email role')
+      .sort({ createdAt: -1 });
+  } catch (err) {
+    logDatabaseError('find applications for job', err, req);
+    throw new ErrorResponse('Error fetching applicants', 500);
+  }
 
   res.status(200).json({
     success: true,
@@ -73,34 +127,42 @@ export const getApplicantsForJob = asyncHandler(async (req, res) => {
   });
 });
 
-
 // @desc    Update application status
 // @route   PUT /api/applications/:applicationId
 // @access  Private (Recruiter/Admin)
 export const updateApplicationStatus = asyncHandler(async (req, res) => {
+  console.info('updateApplicationStatus payload', {
+    params: req.params,
+    body: req.body,
+    user: getUserSummary(req.user),
+  });
+
   const { status } = req.body;
 
-  const application = await Application.findById(
-    req.params.applicationId
-  ).populate('job');
+  let application;
+  try {
+    application = await Application.findById(req.params.applicationId).populate('job');
+  } catch (err) {
+    logDatabaseError('find application by id', err, req);
+    throw new ErrorResponse('Error fetching application', 500);
+  }
 
   if (!application) {
-    res.status(404);
     throw new ErrorResponse('Application not found', 404);
   }
 
-  // Only job creator can update status
-  if (
-    application.job.createdBy.toString() !==
-    req.user._id.toString()
-  ) {
-    res.status(403);
+  if (application.job.createdBy.toString() !== req.user._id.toString()) {
     throw new ErrorResponse('Not authorized', 403);
   }
 
   application.status = status;
 
-  await application.save();
+  try {
+    await application.save();
+  } catch (err) {
+    logDatabaseError('save application status', err, req);
+    throw new ErrorResponse('Failed to update application status', 500);
+  }
 
   res.status(200).json({
     success: true,
@@ -109,30 +171,51 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
   });
 });
 
-
 // @desc    Upload resume
 // @route   PUT /api/applications/upload-resume
 // @access  Private
 export const uploadResume = asyncHandler(async (req, res) => {
+  console.info('uploadResume payload', {
+    params: req.params,
+    body: req.body,
+    user: getUserSummary(req.user),
+  });
+
   if (!req.file) {
-    res.status(400);
     throw new ErrorResponse('No file uploaded', 400);
   }
 
-  const result = await cloudinary.uploader.upload(
-    req.file.path,
-    {
+  let result;
+  try {
+    result = await cloudinary.uploader.upload(req.file.path, {
       resource_type: 'auto',
       folder: 'quickhire/resumes',
-    }
-  );
+    });
+  } catch (err) {
+    logDatabaseError('upload resume to cloudinary', err, req);
+    throw new ErrorResponse('Failed to upload resume', 500);
+  }
 
-  // Save resume URL in user profile
-  const user = await User.findById(req.user._id);
+  let user;
+  try {
+    user = await User.findById(req.user._id);
+  } catch (err) {
+    logDatabaseError('find user for resume save', err, req);
+    throw new ErrorResponse('Error updating resume', 500);
+  }
+
+  if (!user) {
+    throw new ErrorResponse('User not found', 404);
+  }
 
   user.resume = result.secure_url;
 
-  await user.save();
+  try {
+    await user.save();
+  } catch (err) {
+    logDatabaseError('save user resume URL', err, req);
+    throw new ErrorResponse('Failed to save resume', 500);
+  }
 
   res.status(200).json({
     success: true,
@@ -141,19 +224,26 @@ export const uploadResume = asyncHandler(async (req, res) => {
   });
 });
 
-export const getMyApplications = asyncHandler(
-  async (req, res) => {
-    const applications =
-      await Application.find({
-        applicant: req.user._id,
-      }).populate(
-        "job"
-      );
+export const getMyApplications = asyncHandler(async (req, res) => {
+  console.info('getMyApplications payload', {
+    params: req.params,
+    body: req.body,
+    user: getUserSummary(req.user),
+  });
 
-    res.status(200).json({
-      success: true,
-      count: applications.length,
-      applications,
-    });
+  let applications;
+  try {
+    applications = await Application.find({
+      applicant: req.user._id,
+    }).populate('job');
+  } catch (err) {
+    logDatabaseError('find user applications', err, req);
+    throw new ErrorResponse('Error fetching applications', 500);
   }
-);
+
+  res.status(200).json({
+    success: true,
+    count: applications.length,
+    applications,
+  });
+});

@@ -2,6 +2,8 @@ import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 import asyncHandler from "./asyncHandler.js";
 
+import ErrorResponse from "../utils/errorResponse.js";
+
 export const protect = asyncHandler(async (req, res, next) => {
   let token;
 
@@ -14,15 +16,23 @@ export const protect = asyncHandler(async (req, res, next) => {
 
   if (!token) {
     res.status(401);
-    throw new Error("Not authorized, no token");
+    throw new ErrorResponse("Not authorized, no token", 401);
   }
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  let decoded;
+
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    res.status(401);
+    throw new ErrorResponse("Invalid or expired token", 401);
+  }
+
   req.user = await User.findById(decoded.id).select("-password");
 
   if (!req.user) {
     res.status(401);
-    throw new Error("Not authorized, user not found");
+    throw new ErrorResponse("Not authorized, user not found", 401);
   }
 
   next();
@@ -32,7 +42,7 @@ export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       res.status(403);
-      throw new Error('Access denied');
+      throw new ErrorResponse('Access denied', 403);
     }
 
     next();

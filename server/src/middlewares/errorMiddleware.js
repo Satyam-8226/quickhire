@@ -7,6 +7,15 @@ const errorHandler = (err, req, res, next) => {
   let details = {};
 
   console.error('===== ERROR HANDLER =====');
+  console.error('Method:', req.method);
+  console.error('URL:', req.originalUrl);
+  console.error('Params:', JSON.stringify(req.params));
+  console.error('Body:', JSON.stringify(req.body));
+  console.error('User:', req.user ? {
+    id: req.user._id,
+    email: req.user.email,
+    role: req.user.role,
+  } : null);
   console.error('Name:', err.name);
   console.error('Message:', err.message);
   console.error('StatusCode:', statusCode);
@@ -26,6 +35,17 @@ const errorHandler = (err, req, res, next) => {
       return acc;
     }, {});
     console.error('Validation Details:', details);
+  }
+
+  // JWT errors
+  if (err.name === 'JsonWebTokenError') {
+    statusCode = 401;
+    message = 'Invalid token';
+  }
+
+  if (err.name === 'TokenExpiredError') {
+    statusCode = 401;
+    message = 'Token expired';
   }
 
   // Mongoose duplicate key error

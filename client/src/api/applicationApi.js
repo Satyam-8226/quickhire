@@ -37,7 +37,7 @@ export const updateApplicationStatus =
   };
 
 export const uploadResume = async (formData) => {
-  const response = await api.post(
+  const response = await api.put(
     "/applications/upload-resume",
     formData,
     {

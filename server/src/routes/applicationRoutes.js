@@ -17,6 +17,23 @@ import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
+const logApplicationRequests = (req, res, next) => {
+  console.info('===== APPLICATION REQUEST =====');
+  console.info('Method:', req.method);
+  console.info('URL:', req.originalUrl);
+  console.info('Params:', JSON.stringify(req.params));
+  console.info('Body:', JSON.stringify(req.body));
+  console.info('User:', req.user ? {
+    id: req.user._id,
+    email: req.user.email,
+    role: req.user.role,
+  } : null);
+  console.info('===== END APPLICATION REQUEST =====');
+  next();
+};
+
+router.use(logApplicationRequests);
+
 /*
   Candidate Routes
 */
