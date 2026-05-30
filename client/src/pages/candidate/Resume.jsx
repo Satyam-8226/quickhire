@@ -19,7 +19,22 @@ const Resume = () => {
   const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState("");
-  const resumeUrl = user?.currentResume?.resumeUrl || user?.resume || "";
+  const resumeUrl = user?.currentResume?.resumeUrl || "";
+
+  const handleViewResume = () => {
+    console.log("Resume URL for View Resume:", {
+      resumeUrl,
+      currentResume: user?.currentResume,
+      legacyResume: user?.resume,
+    });
+
+    if (resumeUrl) {
+      window.open(resumeUrl, "_blank");
+      return;
+    }
+
+    toast.error("No resume available");
+  };
 
   const validateFile = (file) => {
     if (!file) {
@@ -61,12 +76,20 @@ const Resume = () => {
       formData.append("resume", file);
 
       const response = await uploadResume(formData);
-      const updatedResumeUrl = response?.resumeUrl || user?.resume || "";
+      const updatedResumeUrl = response?.resumeUrl || "";
       const version = response?.version;
+
+      console.log("Resume upload response:", response, {
+        updatedResumeUrl,
+        version,
+      });
+
+      if (!updatedResumeUrl) {
+        throw new Error("Resume upload did not return a valid URL.");
+      }
 
       const updatedUser = {
         ...user,
-        resume: updatedResumeUrl,
         currentResume: {
           version,
           fileName: file.name,
@@ -190,14 +213,13 @@ const Resume = () => {
                       {selectedFileName || "Resume.pdf"}
                     </p>
                   </div>
-                  <a
-                    href={resumeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={handleViewResume}
                     className="inline-flex items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-900"
                   >
                     View resume
-                  </a>
+                  </button>
                 </div>
               </div>
             ) : (
