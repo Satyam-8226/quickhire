@@ -6,6 +6,8 @@ import {
   getMyApplications,
   updateApplicationStatus,
   uploadResume,
+  getMyResumes,
+  activateResumeVersion,
 } from "../controllers/applicationController.js";
 
 import {
@@ -14,7 +16,6 @@ import {
 } from "../middlewares/authMiddleware.js";
 
 import upload from "../middlewares/uploadMiddleware.js";
-
 const router = express.Router();
 
 const logApplicationRequests = (req, res, next) => {
@@ -51,6 +52,20 @@ router.put(
   authorizeRoles("candidate"),
   upload.single("resume"),
   uploadResume
+);
+
+router.get(
+  "/resumes",
+  protect,
+  authorizeRoles("candidate"),
+  getMyResumes
+);
+
+router.patch(
+  "/resumes/:versionId/activate",
+  protect,
+  authorizeRoles("candidate"),
+  activateResumeVersion
 );
 
 router.post(

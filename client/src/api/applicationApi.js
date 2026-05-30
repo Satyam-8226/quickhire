@@ -49,3 +49,13 @@ export const uploadResume = async (formData) => {
 
   return response.data;
 };
+
+export const getMyResumes = async () => {
+  const response = await api.get('/applications/resumes');
+  return response.data;
+};
+
+export const activateResume = async (versionId) => {
+  const response = await api.patch(`/applications/resumes/${versionId}/activate`);
+  return response.data;
+};

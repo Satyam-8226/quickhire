@@ -123,10 +123,10 @@ const CandidateDashboard = () => {
             />
             <StatCard
               title="Resume status"
-              value={user?.resume ? "Uploaded" : "Missing"}
+              value={(user?.currentResume?.resumeUrl || user?.resume) ? "Uploaded" : "Missing"}
               icon={<Sparkles className="w-5 h-5" />}
               description={
-                user?.resume
+                (user?.currentResume?.resumeUrl || user?.resume)
                   ? "Ready for applications"
                   : "Upload a resume"
               }
@@ -226,11 +226,11 @@ const CandidateDashboard = () => {
                       Latest update
                     </p>
                     <p className="mt-2 text-base text-gray-800">
-                      {user?.resume ? "Your resume is ready for applications." : "Upload your resume to increase visibility."}
+                      {(user?.currentResume?.resumeUrl || user?.resume) ? "Your resume is ready for applications." : "Upload your resume to increase visibility."}
                     </p>
                   </div>
                   <span className="inline-flex items-center rounded-full bg-black px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
-                    {user?.resume ? "Active" : "Action needed"}
+                    {(user?.currentResume?.resumeUrl || user?.resume) ? "Active" : "Action needed"}
                   </span>
                 </div>
               </div>

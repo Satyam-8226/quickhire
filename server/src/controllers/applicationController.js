@@ -4,6 +4,7 @@ import asyncHandler from '../middlewares/asyncHandler.js';
 import cloudinary from '../config/cloudinary.js';
 import User from '../models/userModel.js';
 import ErrorResponse from '../utils/errorResponse.js';
+import mongoose from 'mongoose';
 
 const getUserSummary = (user) => {
   if (!user) return null;
@@ -68,7 +69,7 @@ export const applyToJob = asyncHandler(async (req, res) => {
       applicant: req.user._id,
       job: req.params.jobId,
       coverLetter: req.body?.coverLetter || '',
-      resume: req.user.resume || '',
+      resume: req.user.currentResume?.resumeUrl || req.user.resume || '',
     });
   } catch (err) {
     logDatabaseError('create application', err, req);
@@ -113,7 +114,7 @@ export const getApplicantsForJob = asyncHandler(async (req, res) => {
     applications = await Application.find({
       job: req.params.jobId,
     })
-      .populate('applicant', 'name email resume createdAt')
+      .populate('applicant', 'name email resume currentResume createdAt')
       .populate('job', 'title company')
       .sort({ createdAt: -1 });
   } catch (err) {
@@ -197,6 +198,7 @@ export const uploadResume = asyncHandler(async (req, res) => {
     throw new ErrorResponse('Failed to upload resume', 500);
   }
 
+  // Save versioned resume history on user
   let user;
   try {
     user = await User.findById(req.user._id);
@@ -209,7 +211,42 @@ export const uploadResume = asyncHandler(async (req, res) => {
     throw new ErrorResponse('User not found', 404);
   }
 
-  user.resume = result.secure_url;
+  // Determine next version
+  const lastVersion = (user.resumeHistory && user.resumeHistory.length > 0)
+    ? Math.max(...user.resumeHistory.map(r => r.version))
+    : 0;
+
+  const nextVersion = lastVersion + 1;
+
+  // Mark previous active versions inactive
+  if (Array.isArray(user.resumeHistory)) {
+    user.resumeHistory.forEach((v) => { v.active = false; });
+  } else {
+    user.resumeHistory = [];
+  }
+
+  const entry = {
+    version: nextVersion,
+    fileName: req.file.originalname || `resume_v${nextVersion}`,
+    resumeUrl: result.secure_url,
+    publicId: result.public_id || '',
+    uploadedAt: new Date(),
+    active: true,
+  };
+
+  user.resumeHistory.push(entry);
+
+  // Update currentResume shortcut and legacy resume field
+  user.currentResume = {
+    version: entry.version,
+    fileName: entry.fileName,
+    resumeUrl: entry.resumeUrl,
+    publicId: entry.publicId,
+    uploadedAt: entry.uploadedAt,
+    active: true,
+  };
+
+  user.resume = entry.resumeUrl;
 
   try {
     await user.save();
@@ -222,7 +259,86 @@ export const uploadResume = asyncHandler(async (req, res) => {
     success: true,
     message: 'Resume uploaded successfully',
     resumeUrl: result.secure_url,
+    version: nextVersion,
   });
+});
+
+// @desc    Get resume history for current user
+// @route   GET /api/applications/resumes
+// @access  Private (candidate)
+export const getMyResumes = asyncHandler(async (req, res) => {
+  let user;
+  try {
+    user = await User.findById(req.user._id);
+  } catch (err) {
+    logDatabaseError('find user for resume history', err, req);
+    throw new ErrorResponse('Error fetching resume history', 500);
+  }
+
+  if (!user) {
+    throw new ErrorResponse('User not found', 404);
+  }
+
+  const history = (user.resumeHistory || []).map((r) => ({
+    version: r.version,
+    fileName: r.fileName,
+    resumeUrl: r.resumeUrl,
+    uploadedAt: r.uploadedAt,
+    active: r.active,
+    id: r._id,
+  })).sort((a,b) => b.version - a.version);
+
+  res.status(200).json({ success: true, history });
+});
+
+// @desc    Activate a resume version
+// @route   PATCH /api/applications/resumes/:versionId/activate
+// @access  Private (candidate)
+export const activateResumeVersion = asyncHandler(async (req, res) => {
+  const { versionId } = req.params;
+
+  let user;
+  try {
+    user = await User.findById(req.user._id);
+  } catch (err) {
+    logDatabaseError('find user for resume activate', err, req);
+    throw new ErrorResponse('Error activating resume', 500);
+  }
+
+  if (!user) {
+    throw new ErrorResponse('User not found', 404);
+  }
+
+  const target = user.resumeHistory.id(versionId);
+
+  if (!target) {
+    throw new ErrorResponse('Resume version not found', 404);
+  }
+
+  // deactivate all
+  user.resumeHistory.forEach((r) => { r.active = false; });
+
+  target.active = true;
+
+  user.currentResume = {
+    version: target.version,
+    fileName: target.fileName,
+    resumeUrl: target.resumeUrl,
+    publicId: target.publicId,
+    uploadedAt: target.uploadedAt,
+    active: true,
+  };
+
+  user.resume = target.resumeUrl;
+
+  try {
+    await user.save();
+  } catch (err) {
+    logDatabaseError('save user resume activate', err, req);
+    throw new ErrorResponse('Failed to activate resume', 500);
+  }
+
+  res.status(200).json({ success: true, message: 'Resume activated', current: user.currentResume });
 });
 
 export const getMyApplications = asyncHandler(async (req, res) => {

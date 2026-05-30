@@ -19,7 +19,7 @@ const Resume = () => {
   const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState("");
-  const [resumeUrl, setResumeUrl] = useState(user?.resume || "");
+  const resumeUrl = user?.currentResume?.resumeUrl || user?.resume || "";
 
   const validateFile = (file) => {
     if (!file) {
@@ -52,6 +52,8 @@ const Resume = () => {
     }
 
     setSelectedFileName(file.name);
+    // store size for display
+    window.selectedFileSize = file.size;
 
     try {
       setLoading(true);
@@ -60,20 +62,28 @@ const Resume = () => {
 
       const response = await uploadResume(formData);
       const updatedResumeUrl = response?.resumeUrl || user?.resume || "";
+      const version = response?.version;
 
       const updatedUser = {
         ...user,
         resume: updatedResumeUrl,
+        currentResume: {
+          version,
+          fileName: file.name,
+          resumeUrl: updatedResumeUrl,
+          uploadedAt: new Date().toISOString(),
+          active: true,
+        },
       };
 
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      setResumeUrl(updatedResumeUrl);
 
       toast.success("Resume uploaded successfully.");
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
+          error.message ||
           "Failed to upload resume."
       );
     } finally {
@@ -128,9 +138,24 @@ const Resume = () => {
               {loading ? "Uploading..." : "Choose PDF"}
             </label>
 
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <button
+                onClick={() => document.getElementById('resume-upload').click()}
+                disabled={loading}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              >
+                Upload Resume
+              </button>
+              {loading && (
+                <div className="text-sm text-gray-600">Uploading... Please wait.</div>
+              )}
+            </div>
+
             {selectedFileName && (
               <p className="mt-4 text-sm text-gray-600">
                 Selected file: <span className="font-medium text-gray-900">{selectedFileName}</span>
+                <br />
+                Size: <span className="font-medium text-gray-900">{(window.selectedFileSize||0) > 0 ? `${(window.selectedFileSize/1024/1024).toFixed(2)} MB` : ''}</span>
               </p>
             )}
           </div>

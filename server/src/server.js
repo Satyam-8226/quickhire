@@ -1,12 +1,12 @@
 import dotenv from "dotenv";
+// Load env early
+dotenv.config();
+
 import connectDB from "./config/db.js";
 import validateEnv from "./utils/validateEnv.js";
 import app from "./app.js";
 import notFound from "./middlewares/notFound.js";
 import errorHandler from "./middlewares/errorMiddleware.js";
-
-// Load env early
-dotenv.config();
 
 // Basic env validation
 validateEnv();

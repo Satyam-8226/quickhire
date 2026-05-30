@@ -37,6 +37,8 @@ const registerUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      resume: user.resume || '',
+      currentResume: user.currentResume || null,
     },
   });
 });
@@ -66,6 +68,8 @@ const loginUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      resume: user.resume || '',
+      currentResume: user.currentResume || null,
     },
   });
 });

@@ -32,6 +32,44 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: '',
         },
+
+        currentResume: {
+            version: Number,
+            fileName: String,
+            resumeUrl: String,
+            publicId: String,
+            uploadedAt: Date,
+            active: {
+                type: Boolean,
+                default: false,
+            },
+        },
+
+        resumeHistory: [
+            {
+                version: {
+                    type: Number,
+                    required: true,
+                },
+                fileName: {
+                    type: String,
+                },
+                resumeUrl: {
+                    type: String,
+                },
+                publicId: {
+                    type: String,
+                },
+                uploadedAt: {
+                    type: Date,
+                    default: Date.now,
+                },
+                active: {
+                    type: Boolean,
+                    default: false,
+                },
+            },
+        ],
     },
     {
         timestamps: true,

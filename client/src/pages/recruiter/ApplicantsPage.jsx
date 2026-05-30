@@ -220,7 +220,10 @@ const ApplicantsPage = () => {
       <div className="space-y-6">
         {applications.map((application) => {
           const resumeUrl =
-            application.resume || application.applicant?.resume || "";
+            application.applicant?.currentResume?.resumeUrl ||
+            application.applicant?.resume ||
+            application.resume ||
+            "";
 
           return (
             <article
@@ -519,12 +522,12 @@ const ApplicantsPage = () => {
                   </div>
                   <span
                     className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusBadge(
-                      selectedApplication.resume || selectedApplication.applicant?.resume
+                      selectedApplication.applicant?.currentResume?.resumeUrl || selectedApplication.applicant?.resume || selectedApplication.resume
                         ? "accepted"
                         : "pending"
                     )}`}
                   >
-                    {selectedApplication.resume || selectedApplication.applicant?.resume
+                    {selectedApplication.applicant?.currentResume?.resumeUrl || selectedApplication.applicant?.resume || selectedApplication.resume
                       ? "Resume available"
                       : "No resume uploaded"}
                   </span>
@@ -533,19 +536,20 @@ const ApplicantsPage = () => {
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
                   <a
                     href={
-                      selectedApplication.resume ||
+                      selectedApplication.applicant?.currentResume?.resumeUrl ||
                       selectedApplication.applicant?.resume ||
+                      selectedApplication.resume ||
                       "#"
                     }
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-black ${
-                      selectedApplication.resume || selectedApplication.applicant?.resume
+                      selectedApplication.applicant?.currentResume?.resumeUrl || selectedApplication.applicant?.resume || selectedApplication.resume
                         ? ""
                         : "cursor-not-allowed opacity-60"
                     }`}
                     onClick={(e) => {
-                      if (!selectedApplication.resume && !selectedApplication.applicant?.resume) {
+                      if (!selectedApplication.applicant?.currentResume?.resumeUrl && !selectedApplication.applicant?.resume && !selectedApplication.resume) {
                         e.preventDefault();
                       }
                     }}
@@ -555,20 +559,21 @@ const ApplicantsPage = () => {
                   </a>
                   <a
                     href={
-                      selectedApplication.resume ||
+                      selectedApplication.applicant?.currentResume?.resumeUrl ||
                       selectedApplication.applicant?.resume ||
+                      selectedApplication.resume ||
                       "#"
                     }
                     target="_blank"
                     rel="noopener noreferrer"
                     download
                     className={`inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100 ${
-                      selectedApplication.resume || selectedApplication.applicant?.resume
+                      selectedApplication.applicant?.currentResume?.resumeUrl || selectedApplication.applicant?.resume || selectedApplication.resume
                         ? ""
                         : "cursor-not-allowed opacity-60"
                     }`}
                     onClick={(e) => {
-                      if (!selectedApplication.resume && !selectedApplication.applicant?.resume) {
+                      if (!selectedApplication.applicant?.currentResume?.resumeUrl && !selectedApplication.applicant?.resume && !selectedApplication.resume) {
                         e.preventDefault();
                       }
                     }}

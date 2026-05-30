@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import api from "../api/axios";
 
 const AuthContext = createContext();
 
@@ -13,19 +14,28 @@ function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const restoreUser = async () => {
+      if (token) {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
 
-    if (token) {
-
-      const storedUser = localStorage.getItem("user");
-
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        try {
+          const response = await api.get("/auth/me");
+          if (response?.data?.user) {
+            setUser(response.data.user);
+            localStorage.setItem("user", JSON.stringify(response.data.user));
+          }
+        } catch (error) {
+          console.error("Failed to refresh authenticated user", error);
+        }
       }
 
-    }
+      setLoading(false);
+    };
 
-    setLoading(false);
-
+    restoreUser();
   }, [token]);
 
   const login = (userData, jwtToken) => {
