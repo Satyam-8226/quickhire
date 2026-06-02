@@ -57,7 +57,7 @@ quickhire-ai/
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Satyam-8226/quickhire
    cd quickhire-ai
    ```
 2. Install dependencies for both backend and frontend.
