@@ -19,7 +19,8 @@ const Resume = () => {
   const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState("");
-  const resumeUrl = user?.currentResume?.resumeUrl || "";
+  const [selectedFileSize, setSelectedFileSize] = useState(0);
+  const resumeUrl = user?.currentResume?.resumeUrl || user?.resume || "";
 
   const handleViewResume = () => {
     console.log("Resume URL for View Resume:", {
@@ -67,9 +68,7 @@ const Resume = () => {
     }
 
     setSelectedFileName(file.name);
-    // store size for display
-    window.selectedFileSize = file.size;
-
+      setSelectedFileSize(file.size);
     try {
       setLoading(true);
       const formData = new FormData();
@@ -77,7 +76,7 @@ const Resume = () => {
 
       const response = await uploadResume(formData);
       const updatedResumeUrl = response?.resumeUrl || "";
-      const version = response?.version;
+      const version = response?.version ?? user?.currentResume?.version ?? 1;
 
       console.log("Resume upload response:", response, {
         updatedResumeUrl,
@@ -90,13 +89,37 @@ const Resume = () => {
 
       const updatedUser = {
         ...user,
+        resume: updatedResumeUrl,
         currentResume: {
           version,
           fileName: file.name,
           resumeUrl: updatedResumeUrl,
+          publicId: user?.currentResume?.publicId || "",
           uploadedAt: new Date().toISOString(),
           active: true,
         },
+        resumeHistory: Array.isArray(user?.resumeHistory)
+          ? [
+              ...user.resumeHistory,
+              {
+                version,
+                fileName: file.name,
+                resumeUrl: updatedResumeUrl,
+                publicId: user?.currentResume?.publicId || "",
+                uploadedAt: new Date().toISOString(),
+                active: true,
+              },
+            ]
+          : [
+              {
+                version,
+                fileName: file.name,
+                resumeUrl: updatedResumeUrl,
+                publicId: user?.currentResume?.publicId || "",
+                uploadedAt: new Date().toISOString(),
+                active: true,
+              },
+            ],
       };
 
       setUser(updatedUser);
@@ -178,7 +201,7 @@ const Resume = () => {
               <p className="mt-4 text-sm text-gray-600">
                 Selected file: <span className="font-medium text-gray-900">{selectedFileName}</span>
                 <br />
-                Size: <span className="font-medium text-gray-900">{(window.selectedFileSize||0) > 0 ? `${(window.selectedFileSize/1024/1024).toFixed(2)} MB` : ''}</span>
+                Size: <span className="font-medium text-gray-900">{selectedFileSize > 0 ? `${(selectedFileSize / 1024 / 1024).toFixed(2)} MB` : ''}</span>
               </p>
             )}
           </div>

@@ -5,6 +5,7 @@ import cloudinary from '../config/cloudinary.js';
 import User from '../models/userModel.js';
 import ErrorResponse from '../utils/errorResponse.js';
 import mongoose from 'mongoose';
+import fs from 'fs';
 
 const getUserSummary = (user) => {
   if (!user) return null;
@@ -187,11 +188,46 @@ export const uploadResume = asyncHandler(async (req, res) => {
     throw new ErrorResponse('No file uploaded', 400);
   }
 
+  console.log('FILE', req.file);
+  console.log('MIMETYPE', req.file.mimetype);
+  console.log('SIZE', req.file.size);
+  console.log('PATH', req.file.path);
+
+  if (req.file.mimetype !== 'application/pdf') {
+    throw new ErrorResponse('Invalid file type. PDF required.', 400);
+  }
+
+  let actualSize = null;
+  try {
+    actualSize = fs.statSync(req.file.path).size;
+    console.log('ACTUAL SIZE', actualSize);
+    console.log('SIZE MATCH', actualSize === req.file.size);
+  } catch (err) {
+    console.warn('Could not verify uploaded file size on disk', err.message || err);
+  }
+
   let result;
   try {
     result = await cloudinary.uploader.upload(req.file.path, {
-      resource_type: 'auto',
+      resource_type: 'raw',
+      type: 'upload',
+      access_mode: 'public',
       folder: 'quickhire/resumes',
+      use_filename: true,
+      unique_filename: false,
+      overwrite: true,
+    });
+    console.log('CLOUDINARY RESULT', {
+      secure_url: result.secure_url,
+      url: result.url,
+      public_id: result.public_id,
+      resource_type: result.resource_type,
+      type: result.type,
+      access_mode: result.access_mode,
+      format: result.format,
+      content_type: result.content_type,
+      bytes: result.bytes,
+      original_filename: result.original_filename,
     });
   } catch (err) {
     logDatabaseError('upload resume to cloudinary', err, req);
@@ -225,10 +261,12 @@ export const uploadResume = asyncHandler(async (req, res) => {
     user.resumeHistory = [];
   }
 
+  const resumeUrl = result.secure_url || result.url || '';
+
   const entry = {
     version: nextVersion,
     fileName: req.file.originalname || `resume_v${nextVersion}`,
-    resumeUrl: result.secure_url,
+    resumeUrl,
     publicId: result.public_id || '',
     uploadedAt: new Date(),
     active: true,
@@ -240,7 +278,7 @@ export const uploadResume = asyncHandler(async (req, res) => {
   user.currentResume = {
     version: entry.version,
     fileName: entry.fileName,
-    resumeUrl: entry.resumeUrl,
+    resumeUrl,
     publicId: entry.publicId,
     uploadedAt: entry.uploadedAt,
     active: true,
@@ -258,7 +296,7 @@ export const uploadResume = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Resume uploaded successfully',
-    resumeUrl: result.secure_url,
+    resumeUrl,
     version: nextVersion,
   });
 });
