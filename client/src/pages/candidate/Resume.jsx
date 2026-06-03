@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../../context/AuthContext";
-import { uploadResume } from "../../api/applicationApi";
+import { activateResume, getMyResumes, uploadResume } from "../../api/applicationApi";
 
 import PageHeader from "../../components/ui/PageHeader";
 import SectionCard from "../../components/ui/SectionCard";
@@ -18,9 +18,29 @@ import {
 const Resume = () => {
   const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState("");
   const [selectedFileSize, setSelectedFileSize] = useState(0);
+  const [resumeHistory, setResumeHistory] = useState([]);
   const resumeUrl = user?.currentResume?.resumeUrl || user?.resume || "";
+
+  useEffect(() => {
+    const loadResumeHistory = async () => {
+      try {
+        setHistoryLoading(true);
+        const response = await getMyResumes();
+        setResumeHistory(response?.history || []);
+      } catch (error) {
+        console.error("Failed to load resume history", error);
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+
+    if (user) {
+      loadResumeHistory();
+    }
+  }, [user]);
 
   const handleViewResume = () => {
     console.log("Resume URL for View Resume:", {
@@ -56,6 +76,36 @@ const Resume = () => {
     }
 
     return null;
+  };
+
+  const handleActivateResume = async (versionId) => {
+    try {
+      const response = await activateResume(versionId);
+      const activatedResume = response?.current || null;
+
+      if (!activatedResume?.resumeUrl) {
+        throw new Error("Resume activation did not return a valid URL.");
+      }
+
+      const updatedHistory = resumeHistory.map((item) => ({
+        ...item,
+        active: item.id === versionId || item._id === versionId || item.version === activatedResume.version,
+      }));
+
+      const updatedUser = {
+        ...user,
+        resume: activatedResume.resumeUrl,
+        currentResume: activatedResume,
+        resumeHistory: updatedHistory,
+      };
+
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setResumeHistory(updatedHistory);
+      toast.success("Resume version activated.");
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message || "Failed to activate resume version.");
+    }
   };
 
   const handleFileUpload = async (e) => {
@@ -253,6 +303,46 @@ const Resume = () => {
                 </p>
               </div>
             )}
+
+            <div className="rounded-3xl border border-gray-200 bg-white p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm text-gray-500">Resume versions</p>
+                  <p className="mt-1 text-sm text-gray-600">Keep the version you want recruiters to see for new applications.</p>
+                </div>
+                {historyLoading && <span className="text-sm text-gray-500">Loading...</span>}
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {resumeHistory.length === 0 && !historyLoading ? (
+                  <p className="text-sm text-gray-600">No previous versions yet. Upload a new PDF to create one.</p>
+                ) : (
+                  resumeHistory.map((item) => (
+                    <div key={item.id || item._id || item.version} className="rounded-2xl border border-gray-200 p-4">
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">Version {item.version}</p>
+                          <p className="text-sm text-gray-600">{item.fileName || "Resume.pdf"}</p>
+                          <p className="text-xs text-gray-500">Uploaded {new Date(item.uploadedAt).toLocaleString()}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status={item.active ? "accepted" : "pending"} />
+                          {!item.active && (
+                            <button
+                              type="button"
+                              onClick={() => handleActivateResume(item.id || item._id)}
+                              className="inline-flex items-center justify-center rounded-full bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-900"
+                            >
+                              Set Active
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </SectionCard>
       </div>

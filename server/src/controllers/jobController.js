@@ -45,9 +45,10 @@ export const createJob = asyncHandler(async (req, res) => {
     if (!description) throw new ErrorResponse('Description is required', 400);
     if (!requirements || requirements.length === 0) throw new ErrorResponse('Requirements are required', 400);
 
-    // Ensure salary is a number
-    const numSalary = Number(salary);
-    if (isNaN(numSalary)) throw new ErrorResponse('Salary must be a valid number', 400);
+    const normalizedSalary = typeof salary === 'string' ? salary.trim() : String(salary ?? '').trim();
+    if (!normalizedSalary) {
+      throw new ErrorResponse('Salary is required', 400);
+    }
 
     // Ensure requirements is an array
     const reqArray = Array.isArray(requirements) ? requirements : (requirements ? [requirements] : []);
@@ -58,7 +59,7 @@ export const createJob = asyncHandler(async (req, res) => {
       company,
       location,
       jobType,
-      salary: numSalary,
+      salary: normalizedSalary,
       description,
       requirements: reqArray,
       createdBy: req.user._id,
@@ -69,7 +70,7 @@ export const createJob = asyncHandler(async (req, res) => {
       company,
       location,
       jobType,
-      salary: numSalary,
+      salary: normalizedSalary,
       description,
       requirements: reqArray,
       skills: skills || [],

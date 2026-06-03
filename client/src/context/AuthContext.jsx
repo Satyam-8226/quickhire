@@ -11,6 +11,7 @@ const normalizeUser = (userData) => {
   return {
     ...userData,
     resume: resumeUrl,
+    resumeHistory: Array.isArray(userData?.resumeHistory) ? userData.resumeHistory : [],
     currentResume: userData?.currentResume
       ? {
           ...userData.currentResume,

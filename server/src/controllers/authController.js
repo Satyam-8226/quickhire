@@ -39,6 +39,7 @@ const registerUser = asyncHandler(async (req, res) => {
       role: user.role,
       resume: user.resume || '',
       currentResume: user.currentResume || null,
+      resumeHistory: user.resumeHistory || [],
     },
   });
 });
@@ -70,6 +71,7 @@ const loginUser = asyncHandler(async (req, res) => {
       role: user.role,
       resume: user.resume || '',
       currentResume: user.currentResume || null,
+      resumeHistory: user.resumeHistory || [],
     },
   });
 });
