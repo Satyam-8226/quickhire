@@ -1,4 +1,7 @@
-import React from "react";
+import AppInput from "../ui/AppInput";
+import AppSelect from "../ui/AppSelect";
+import AppTextarea from "../ui/AppTextarea";
+import AppButton from "../ui/AppButton";
 
 const JobForm = ({
   formData,
@@ -8,134 +11,85 @@ const JobForm = ({
   buttonText,
 }) => {
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-5"
-    >
-      <div>
-        <label className="block mb-2 font-medium">
-          Job Title
-        </label>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <AppInput
+        label="Job Title"
+        type="text"
+        name="title"
+        value={formData.title}
+        onChange={handleChange}
+        placeholder="Frontend Developer"
+        required
+      />
 
-        <input
+      <AppInput
+        label="Company"
+        type="text"
+        name="company"
+        value={formData.company}
+        onChange={handleChange}
+        placeholder="Google"
+        required
+      />
+
+      <div className="grid gap-6 md:grid-cols-3">
+        <AppInput
+          label="Location"
           type="text"
-          name="title"
-          value={formData.title}
+          name="location"
+          value={formData.location}
           onChange={handleChange}
-          placeholder="Frontend Developer"
-          className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black"
+          placeholder="Bangalore"
           required
         />
-      </div>
 
-      <div>
-        <label className="block mb-2 font-medium">
-          Company
-        </label>
+        <AppSelect
+          label="Job Type"
+          name="jobType"
+          value={formData.jobType}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select Type</option>
+          <option value="Full-Time">Full-Time</option>
+          <option value="Part-Time">Part-Time</option>
+          <option value="Internship">Internship</option>
+          <option value="Remote">Remote</option>
+        </AppSelect>
 
-        <input
+        <AppInput
+          label="Salary"
           type="text"
-          name="company"
-          value={formData.company}
+          name="salary"
+          value={formData.salary}
           onChange={handleChange}
-          placeholder="Google"
-          className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black"
-          required
+          placeholder="12 LPA"
         />
       </div>
 
-      <div className="grid md:grid-cols-3 gap-4">
-        <div>
-          <label className="block mb-2 font-medium">
-            Location
-          </label>
+      <AppTextarea
+        label="Description"
+        name="description"
+        value={formData.description}
+        onChange={handleChange}
+        rows={6}
+        placeholder="Enter job description"
+        required
+      />
 
-          <input
-            type="text"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            placeholder="Bangalore"
-            className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black"
-            required
-          />
-        </div>
+      <AppTextarea
+        label="Requirements"
+        name="requirements"
+        value={formData.requirements}
+        onChange={handleChange}
+        rows={5}
+        placeholder="React, Node.js, MongoDB..."
+        required
+      />
 
-        <div>
-          <label className="block mb-2 font-medium">
-            Job Type
-          </label>
-
-          <select
-            name="jobType"
-            value={formData.jobType}
-            onChange={handleChange}
-            className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black"
-            required
-          >
-            <option value="">Select Type</option>
-            <option value="Full-Time">Full-Time</option>
-            <option value="Part-Time">Part-Time</option>
-            <option value="Internship">Internship</option>
-            <option value="Remote">Remote</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block mb-2 font-medium">
-            Salary
-          </label>
-
-          <input
-            type="text"
-            name="salary"
-            value={formData.salary}
-            onChange={handleChange}
-            placeholder="12 LPA"
-            className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block mb-2 font-medium">
-          Description
-        </label>
-
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          rows="6"
-          placeholder="Enter job description"
-          className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block mb-2 font-medium">
-          Requirements
-        </label>
-
-        <textarea
-          name="requirements"
-          value={formData.requirements}
-          onChange={handleChange}
-          rows="5"
-          placeholder="React, Node.js, MongoDB..."
-          className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black"
-          required
-        />
-      </div>
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="bg-black text-white px-6 py-3 rounded-lg hover:opacity-90 disabled:opacity-50"
-      >
+      <AppButton type="submit" disabled={loading}>
         {loading ? "Processing..." : buttonText}
-      </button>
+      </AppButton>
     </form>
   );
 };

@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
-
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { Upload, FileText } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
-import { activateResume, getMyResumes, uploadResume } from "../../api/applicationApi";
+import {
+  activateResume,
+  getMyResumes,
+  uploadResume,
+} from "../../api/applicationApi";
 import { getErrorMessage, showErrorToast } from "../../utils/errorMessage";
-
 import PageHeader from "../../components/ui/PageHeader";
 import SectionCard from "../../components/ui/SectionCard";
 import StatusBadge from "../../components/ui/StatusBadge";
-
-import {
-  Upload,
-  FileText,
-} from "lucide-react";
+import AppButton, { AppButtonLink, buttonClassName } from "../../components/ui/AppButton";
+import AppCard from "../../components/ui/AppCard";
 
 const Resume = () => {
   const { user, setUser } = useAuth();
@@ -48,28 +48,18 @@ const Resume = () => {
       window.open(resumeUrl, "_blank");
       return;
     }
-
     toast.error("No resume available");
   };
 
   const validateFile = (file) => {
-    if (!file) {
-      return "Please select a file.";
-    }
-
+    if (!file) return "Please select a file.";
     const isPDF =
       file.type === "application/pdf" ||
       file.name.toLowerCase().endsWith(".pdf");
-
-    if (!isPDF) {
-      return "Only PDF files are allowed.";
-    }
-
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
+    if (!isPDF) return "Only PDF files are allowed.";
+    if (file.size > 5 * 1024 * 1024) {
       return "File size must be less than 5MB.";
     }
-
     return null;
   };
 
@@ -84,7 +74,10 @@ const Resume = () => {
 
       const updatedHistory = resumeHistory.map((item) => ({
         ...item,
-        active: item.id === versionId || item._id === versionId || item.version === activatedResume.version,
+        active:
+          item.id === versionId ||
+          item._id === versionId ||
+          item.version === activatedResume.version,
       }));
 
       const updatedUser = {
@@ -113,7 +106,8 @@ const Resume = () => {
     }
 
     setSelectedFileName(file.name);
-      setSelectedFileSize(file.size);
+    setSelectedFileSize(file.size);
+
     try {
       setLoading(true);
       const formData = new FormData();
@@ -164,7 +158,6 @@ const Resume = () => {
 
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
-
       toast.success("Resume uploaded successfully.");
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to upload resume."));
@@ -174,34 +167,36 @@ const Resume = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-5xl">
       <PageHeader
         title="Resume Center"
         description="Keep your resume up to date so recruiters always see your latest profile and you can apply with confidence."
         cta={
-          <Link
-            to="/candidate/applications"
-            className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-900"
-          >
+          <AppButtonLink to="/candidate/applications" size="md">
             View Applications
-          </Link>
+          </AppButtonLink>
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+      <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
         <SectionCard
           title="Upload Resume"
           subtitle="Upload your latest resume in PDF format to keep your profile recruiter-ready."
+          hover={false}
         >
-          <div className="rounded-3xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center transition hover:border-black">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white text-gray-700 shadow-sm">
+          <AppCard
+            hover={false}
+            className="border-dashed bg-brand-light/30 text-center !p-10"
+          >
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-white text-brand shadow-sm">
               <Upload className="h-10 w-10" />
             </div>
-            <p className="text-lg font-semibold text-gray-900 mb-3">
+            <p className="text-lg font-semibold text-slate-900 mb-3">
               Select your latest resume
             </p>
-            <p className="mx-auto max-w-md text-sm text-gray-600 mb-6">
-              PDF only, up to 5MB. Your upload will update the resume attached to all new applications.
+            <p className="mx-auto mb-6 max-w-md text-sm text-slate-500">
+              PDF only, up to 5MB. Your upload will update the resume attached
+              to all new applications.
             </p>
 
             <input
@@ -214,48 +209,42 @@ const Resume = () => {
             />
             <label
               htmlFor="resume-upload"
-              className="inline-flex items-center justify-center gap-3 rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-900 cursor-pointer"
+              className={`${buttonClassName()} cursor-pointer ${loading ? "pointer-events-none opacity-50" : ""}`}
             >
-              <Upload className="h-4 w-4" />
               {loading ? "Uploading..." : "Choose PDF"}
             </label>
 
-            <div className="mt-4 flex items-center justify-center gap-3">
-              <button
-                onClick={() => document.getElementById('resume-upload').click()}
-                disabled={loading}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-              >
-                Upload Resume
-              </button>
-              {loading && (
-                <div className="text-sm text-gray-600">Uploading... Please wait.</div>
-              )}
-            </div>
-
             {selectedFileName && (
-              <p className="mt-4 text-sm text-gray-600">
-                Selected file: <span className="font-medium text-gray-900">{selectedFileName}</span>
-                <br />
-                Size: <span className="font-medium text-gray-900">{selectedFileSize > 0 ? `${(selectedFileSize / 1024 / 1024).toFixed(2)} MB` : ''}</span>
+              <p className="mt-4 text-sm text-slate-500">
+                Selected:{" "}
+                <span className="font-medium text-slate-900">
+                  {selectedFileName}
+                </span>
+                {selectedFileSize > 0 && (
+                  <>
+                    {" "}
+                    · {(selectedFileSize / 1024 / 1024).toFixed(2)} MB
+                  </>
+                )}
               </p>
             )}
-          </div>
+          </AppCard>
         </SectionCard>
 
         <SectionCard
           title="Current resume"
           subtitle="Your uploaded resume is visible to recruiters for future applications."
+          hover={false}
         >
           <div className="space-y-6">
-            <div className="flex items-center justify-between gap-4 rounded-3xl border border-gray-200 bg-white p-5">
+            <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50/50 p-5">
               <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-black text-white">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand text-white">
                   <FileText className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Resume status</p>
-                  <p className="mt-1 text-lg font-semibold text-gray-900">
+                  <p className="text-sm text-slate-500">Resume status</p>
+                  <p className="mt-1 text-lg font-semibold text-slate-900">
                     {resumeUrl ? "Uploaded" : "No resume uploaded"}
                   </p>
                 </div>
@@ -264,70 +253,85 @@ const Resume = () => {
             </div>
 
             {resumeUrl ? (
-              <div className="rounded-3xl border border-gray-200 bg-gray-50 p-5">
+              <AppCard hover={false} className="!p-5">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm text-gray-500">Last resume</p>
-                    <p className="mt-1 text-base font-medium text-gray-900">
+                    <p className="text-sm text-slate-500">Last resume</p>
+                    <p className="mt-1 font-medium text-slate-900">
                       {selectedFileName || "Resume.pdf"}
                     </p>
                   </div>
-                  <button
+                  <AppButton
                     type="button"
+                    size="md"
                     onClick={handleViewResume}
-                    className="inline-flex items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-900"
                   >
                     View resume
-                  </button>
+                  </AppButton>
                 </div>
-              </div>
+              </AppCard>
             ) : (
-              <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5">
-                <p className="text-sm font-semibold text-blue-900">No resume uploaded yet</p>
-                <p className="mt-2 text-sm text-blue-700">
-                  Upload a PDF to get your profile ready for recruiters and improve your application flow.
+              <div className="rounded-2xl border border-brand/20 bg-brand-light p-5">
+                <p className="text-sm font-semibold text-brand">
+                  No resume uploaded yet
+                </p>
+                <p className="mt-2 text-sm text-slate-600">
+                  Upload a PDF to get your profile ready for recruiters.
                 </p>
               </div>
             )}
 
-            <div className="rounded-3xl border border-gray-200 bg-white p-5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm text-gray-500">Resume versions</p>
-                  <p className="mt-1 text-sm text-gray-600">Keep the version you want recruiters to see for new applications.</p>
-                </div>
-                {historyLoading && <span className="text-sm text-gray-500">Loading...</span>}
-              </div>
-
-              <div className="mt-4 space-y-3">
-                {resumeHistory.length === 0 && !historyLoading ? (
-                  <p className="text-sm text-gray-600">No previous versions yet. Upload a new PDF to create one.</p>
-                ) : (
-                  resumeHistory.map((item) => (
-                    <div key={item.id || item._id || item.version} className="rounded-2xl border border-gray-200 p-4">
-                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">Version {item.version}</p>
-                          <p className="text-sm text-gray-600">{item.fileName || "Resume.pdf"}</p>
-                          <p className="text-xs text-gray-500">Uploaded {new Date(item.uploadedAt).toLocaleString()}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <StatusBadge status={item.active ? "accepted" : "pending"} />
-                          {!item.active && (
-                            <button
-                              type="button"
-                              onClick={() => handleActivateResume(item.id || item._id)}
-                              className="inline-flex items-center justify-center rounded-full bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-900"
-                            >
-                              Set Active
-                            </button>
-                          )}
-                        </div>
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-slate-900">
+                Resume versions
+              </p>
+              {historyLoading && (
+                <p className="text-sm text-slate-500">Loading...</p>
+              )}
+              {resumeHistory.length === 0 && !historyLoading ? (
+                <p className="text-sm text-slate-500">
+                  No previous versions yet.
+                </p>
+              ) : (
+                resumeHistory.map((item) => (
+                  <AppCard
+                    key={item.id || item._id || item.version}
+                    hover={false}
+                    className="!p-4"
+                  >
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">
+                          Version {item.version}
+                        </p>
+                        <p className="text-sm text-slate-500">
+                          {item.fileName || "Resume.pdf"}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          Uploaded{" "}
+                          {new Date(item.uploadedAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge
+                          status={item.active ? "accepted" : "pending"}
+                        />
+                        {!item.active && (
+                          <AppButton
+                            type="button"
+                            size="md"
+                            onClick={() =>
+                              handleActivateResume(item.id || item._id)
+                            }
+                          >
+                            Set Active
+                          </AppButton>
+                        )}
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                  </AppCard>
+                ))
+              )}
             </div>
           </div>
         </SectionCard>

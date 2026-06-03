@@ -1,106 +1,95 @@
-import { Link } from "react-router-dom";
-import { Zap, Users, Briefcase, CheckCircle } from "lucide-react";
+import { Zap, Users, Briefcase, CheckCircle, ArrowRight } from "lucide-react";
+import AppCard from "../../components/ui/AppCard";
+import { AppButtonLink } from "../../components/ui/AppButton";
+
+const features = [
+  {
+    icon: Zap,
+    title: "Fast Applications",
+    description: "Apply to jobs in seconds with your saved profile",
+  },
+  {
+    icon: Users,
+    title: "Smart Matching",
+    description: "Get matched with opportunities tailored to your skills",
+  },
+  {
+    icon: Briefcase,
+    title: "Diverse Roles",
+    description: "Explore thousands of jobs from startups to enterprises",
+  },
+  {
+    icon: CheckCircle,
+    title: "Fair Process",
+    description: "Transparent hiring process with real feedback",
+  },
+];
 
 function Home() {
   return (
     <div>
-      {/* Hero Section */}
-      <section className="bg-black text-white py-20">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            Find Your Next Great Opportunity
+      <section className="relative overflow-hidden border-b border-slate-200 bg-white">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,#f3f0ff,transparent_50%)]" />
+        <div className="relative mx-auto max-w-7xl px-6 py-24 text-center md:py-32">
+          <p className="mb-4 inline-flex items-center rounded-full bg-brand-light px-4 py-1.5 text-sm font-medium text-brand">
+            AI-powered hiring platform
+          </p>
+          <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight text-slate-900 md:text-6xl">
+            Find your next great opportunity
           </h1>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            QuickHire AI connects talented job seekers with amazing employers. 
-            Get hired faster with our intelligent matching platform.
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-500">
+            QuickHire connects talented job seekers with amazing employers through
+            a modern, transparent hiring experience.
           </p>
-          <div className="flex gap-4 justify-center">
-            <Link
-              to="/jobs"
-              className="bg-white text-black px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition"
-            >
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <AppButtonLink to="/jobs" size="lg">
               Browse Jobs
-            </Link>
-            <Link
-              to="/register"
-              className="bg-gray-800 text-white px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition"
-            >
+              <ArrowRight className="h-4 w-4" />
+            </AppButtonLink>
+            <AppButtonLink to="/register" variant="secondary" size="lg">
               Get Started
-            </Link>
+            </AppButtonLink>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-4xl font-bold text-center mb-12">
-            Why Choose QuickHire?
-          </h2>
+      <section className="py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-16 text-center">
+            <h2 className="text-4xl font-bold text-slate-900">
+              Why choose QuickHire?
+            </h2>
+            <p className="mt-4 text-sm text-slate-500">
+              Built for candidates and recruiters who expect a premium experience.
+            </p>
+          </div>
 
-          <div className="grid md:grid-cols-4 gap-8">
-            {/* Feature 1 */}
-            <div className="bg-white rounded-lg p-8 shadow-sm">
-              <Zap className="w-10 h-10 text-black mb-4" />
-              <h3 className="text-xl font-semibold mb-2">
-                Fast Applications
-              </h3>
-              <p className="text-gray-600">
-                Apply to jobs in seconds with your saved profile
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="bg-white rounded-lg p-8 shadow-sm">
-              <Users className="w-10 h-10 text-black mb-4" />
-              <h3 className="text-xl font-semibold mb-2">
-                Smart Matching
-              </h3>
-              <p className="text-gray-600">
-                Get matched with opportunities tailored to your skills
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="bg-white rounded-lg p-8 shadow-sm">
-              <Briefcase className="w-10 h-10 text-black mb-4" />
-              <h3 className="text-xl font-semibold mb-2">
-                Diverse Roles
-              </h3>
-              <p className="text-gray-600">
-                Explore thousands of jobs from startups to enterprises
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="bg-white rounded-lg p-8 shadow-sm">
-              <CheckCircle className="w-10 h-10 text-black mb-4" />
-              <h3 className="text-xl font-semibold mb-2">
-                Fair Process
-              </h3>
-              <p className="text-gray-600">
-                Transparent hiring process with real feedback
-              </p>
-            </div>
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {features.map((feature) => (
+              <AppCard key={feature.title}>
+                <feature.icon className="mb-4 h-8 w-8 text-brand" />
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-slate-500">{feature.description}</p>
+              </AppCard>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold mb-6">
-            Ready to Get Hired?
+      <section className="border-t border-slate-200 bg-white py-24">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <h2 className="text-4xl font-bold text-slate-900 mb-4">
+            Ready to get hired?
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Browse thousands of job opportunities and start your career journey today.
+          <p className="text-sm text-slate-500 mb-10">
+            Browse thousands of job opportunities and start your career journey
+            today.
           </p>
-          <Link
-            to="/jobs"
-            className="inline-block bg-black text-white px-8 py-4 rounded-lg font-semibold text-lg hover:opacity-90 transition"
-          >
+          <AppButtonLink to="/jobs" size="lg">
             Explore Jobs Now
-          </Link>
+          </AppButtonLink>
         </div>
       </section>
     </div>

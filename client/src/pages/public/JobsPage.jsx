@@ -3,65 +3,35 @@ import { useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 
 import { getAllJobs } from "../../api/jobApi";
-
 import JobCard from "../../components/jobs/JobCard";
-
-import Loader from "../../components/common/Loader";
 import EmptyState from "../../components/common/EmptyState";
 import ErrorState from "../../components/common/ErrorState";
 import Pagination from "../../components/common/Pagination";
-import JobCardSkeleton from "../../components/skeletons/JobCardSkeleton";
+import { JobsPageSkeleton } from "../../components/skeletons/JobCardSkeleton";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "../../utils/errorMessage";
+import AppCard from "../../components/ui/AppCard";
+import AppInput from "../../components/ui/AppInput";
+import AppSelect from "../../components/ui/AppSelect";
+import { inputClassName } from "../../components/ui/AppInput";
+import { cn } from "../../utils/cn";
 
 const JobsPage = () => {
-  // ===============================
-  // URL SEARCH PARAMS
-  // ===============================
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [searchParams, setSearchParams] =
-    useSearchParams();
-
-  // ===============================
-  // FILTER STATES
-  // ===============================
-
-  const [keyword, setKeyword] = useState(
-    searchParams.get("keyword") || ""
-  );
-
-  const [location, setLocation] = useState(
-    searchParams.get("location") || ""
-  );
-
-  const [jobType, setJobType] = useState(
-    searchParams.get("jobType") || ""
-  );
-
-  const [page, setPage] = useState(
-    Number(searchParams.get("page")) || 1
-  );
-
-  // ===============================
-  // DATA STATES
-  // ===============================
+  const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
+  const [location, setLocation] = useState(searchParams.get("location") || "");
+  const [jobType, setJobType] = useState(searchParams.get("jobType") || "");
+  const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
 
   const [jobs, setJobs] = useState([]);
-
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState("");
-
   const [totalPages, setTotalPages] = useState(1);
-
-  // ===============================
-  // FETCH JOBS
-  // ===============================
 
   const fetchJobs = async () => {
     try {
       setLoading(true);
-
       setError("");
 
       const data = await getAllJobs({
@@ -73,7 +43,6 @@ const JobsPage = () => {
       });
 
       setJobs(data.jobs);
-
       setTotalPages(data.totalPages);
     } catch (err) {
       const message = getErrorMessage(err, "Failed to fetch jobs");
@@ -84,10 +53,6 @@ const JobsPage = () => {
     }
   };
 
-  // ===============================
-  // FETCH ON FILTER CHANGE
-  // ===============================
-
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchJobs();
@@ -95,10 +60,6 @@ const JobsPage = () => {
 
     return () => clearTimeout(timer);
   }, [keyword, location, jobType, page]);
-
-  // ===============================
-  // URL QUERY SYNC
-  // ===============================
 
   useEffect(() => {
     setSearchParams({
@@ -109,192 +70,107 @@ const JobsPage = () => {
     });
   }, [keyword, location, jobType, page]);
 
-  // ===============================
-  // PAGINATION HANDLER
-  // ===============================
-
   const handlePageChange = (newPage) => {
     setPage(newPage);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  // ===============================
-  // RETRY HANDLER
-  // ===============================
-
-  const handleRetry = () => {
-    fetchJobs();
-  };
-
-  // ===============================
-  // INITIAL LOADER
-  // ===============================
 
   if (loading && jobs.length === 0) {
-    return (
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="grid gap-6">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <JobCardSkeleton key={index} />
-          ))}
-        </div>
-      </div>
-    );
+    return <JobsPageSkeleton />;
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-
-      {/* ========================= */}
-      {/* HEADER */}
-      {/* ========================= */}
-
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">
-          Find Your Next Opportunity
-        </h1>
-
-        <p className="text-gray-600">
-          Discover professional opportunities with
-          QuickHire AI
+    <div className="mx-auto max-w-6xl px-6 py-8">
+      <header className="mb-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
+          Open roles
         </p>
-      </div>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
+          Find your next opportunity
+        </h1>
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-500">
+          Discover professional opportunities curated for your career goals.
+        </p>
+      </header>
 
-      {/* ========================= */}
-      {/* SEARCH + FILTERS */}
-      {/* ========================= */}
-
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-8 border">
-        <div className="grid gap-4 md:grid-cols-3">
-
-          {/* Keyword Search */}
-
+      <AppCard hover={false} className="mb-6 !p-5">
+        <div className="grid gap-5 md:grid-cols-3">
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Search Jobs
+            <label className="mb-1.5 block text-xs font-medium text-slate-500">
+              Search
             </label>
-
             <div className="relative">
-              <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Job title or company..."
+                placeholder="Title or company..."
                 value={keyword}
                 onChange={(e) => {
                   setKeyword(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                className={cn(inputClassName, "h-11 pl-10 text-sm")}
               />
             </div>
           </div>
 
-          {/* Location Filter */}
+          <AppInput
+            label="Location"
+            type="text"
+            placeholder="City or region..."
+            value={location}
+            onChange={(e) => {
+              setLocation(e.target.value);
+              setPage(1);
+            }}
+            className="h-11 text-sm"
+          />
 
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Location
-            </label>
-
-            <input
-              type="text"
-              placeholder="City or region..."
-              value={location}
-              onChange={(e) => {
-                setLocation(e.target.value);
-                setPage(1);
-              }}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-            />
-          </div>
-
-          {/* Job Type Filter */}
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Job Type
-            </label>
-
-            <select
-              value={jobType}
-              onChange={(e) => {
-                setJobType(e.target.value);
-                setPage(1);
-              }}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-            >
-              <option value="">
-                All Types
-              </option>
-
-              <option value="Remote">
-                Remote
-              </option>
-
-              <option value="Hybrid">
-                Hybrid
-              </option>
-
-              <option value="Onsite">
-                Onsite
-              </option>
-
-              <option value="Internship">
-                Internship
-              </option>
-            </select>
-          </div>
+          <AppSelect
+            label="Job type"
+            value={jobType}
+            onChange={(e) => {
+              setJobType(e.target.value);
+              setPage(1);
+            }}
+            className="h-11 text-sm"
+          >
+            <option value="">All types</option>
+            <option value="Remote">Remote</option>
+            <option value="Hybrid">Hybrid</option>
+            <option value="Onsite">Onsite</option>
+            <option value="Internship">Internship</option>
+          </AppSelect>
         </div>
-      </div>
-
-      {/* ========================= */}
-      {/* ERROR STATE */}
-      {/* ========================= */}
+      </AppCard>
 
       {error && !loading && (
         <ErrorState
           title="Failed to load jobs"
           message={error}
-          onRetry={handleRetry}
+          onRetry={fetchJobs}
         />
       )}
 
-      {/* ========================= */}
-      {/* JOBS GRID */}
-      {/* ========================= */}
-
       {!error && jobs.length > 0 && (
-        <div className="grid gap-6 mb-8">
-          {jobs.map((job) => (
-            <JobCard
-              key={job._id}
-              job={job}
-            />
-          ))}
-        </div>
+        <>
+          <p className="mb-4 text-xs font-medium text-slate-400">
+            {jobs.length} role{jobs.length !== 1 ? "s" : ""} on this page
+          </p>
+          <div className="mb-8 grid gap-4">
+            {jobs.map((job) => (
+              <JobCard key={job._id} job={job} variant="browse" />
+            ))}
+          </div>
+        </>
       )}
 
-      {/* ========================= */}
-      {/* EMPTY STATE */}
-      {/* ========================= */}
-
-      {!error &&
-        !loading &&
-        jobs.length === 0 && (
-          <EmptyState
-            title="No jobs found"
-            message="Try adjusting your filters or search keywords"
-          />
-        )}
-
-      {/* ========================= */}
-      {/* PAGINATION */}
-      {/* ========================= */}
+      {!error && !loading && jobs.length === 0 && (
+        <EmptyState
+          title="No jobs found"
+          message="Try different keywords, locations, or job types to discover more openings."
+        />
+      )}
 
       {!error && jobs.length > 0 && (
         <Pagination

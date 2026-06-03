@@ -26,6 +26,11 @@ import {
 
 import ApplicantSkeleton from "../../components/skeletons/ApplicationSkeleton";
 import { getErrorMessage } from "../../utils/errorMessage";
+import StatusBadge from "../../components/ui/StatusBadge";
+import AppSelect from "../../components/ui/AppSelect";
+import AppButton from "../../components/ui/AppButton";
+import AppCard from "../../components/ui/AppCard";
+import { buttonClassName } from "../../components/ui/AppButton";
 
 const statusOptions = [
   { value: "pending", label: "Pending" },
@@ -33,32 +38,6 @@ const statusOptions = [
   { value: "accepted", label: "Accepted" },
   { value: "rejected", label: "Rejected" },
 ];
-
-const getStatusBadge = (status) => {
-  switch (status) {
-    case "accepted":
-      return "bg-green-100 text-green-800 border-green-200";
-    case "rejected":
-      return "bg-red-100 text-red-800 border-red-200";
-    case "reviewed":
-      return "bg-blue-100 text-blue-800 border-blue-200";
-    default:
-      return "bg-yellow-100 text-yellow-800 border-yellow-200";
-  }
-};
-
-const getStatusIcon = (status) => {
-  switch (status) {
-    case "accepted":
-      return <CheckCircle2 className="w-4 h-4" />;
-    case "rejected":
-      return <XCircle className="w-4 h-4" />;
-    case "reviewed":
-      return <FileText className="w-4 h-4" />;
-    default:
-      return <Clock className="w-4 h-4" />;
-  }
-};
 
 const formatDate = (value) => {
   if (!value) return "N/A";
@@ -223,11 +202,13 @@ const ApplicantsPage = () => {
             "";
 
           return (
-            <article
+            <AppCard
               key={application._id}
-              className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm"
+              hover={false}
+              padding={false}
+              className="overflow-hidden"
             >
-              <div className="border-b border-gray-200 bg-slate-50 px-6 py-5 sm:px-8">
+              <div className="border-b border-slate-200 bg-slate-50/80 px-6 py-5 sm:px-8">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex items-start gap-4">
                     <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-200 text-slate-600">
@@ -246,14 +227,7 @@ const ApplicantsPage = () => {
                   </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <span
-                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold ${getStatusBadge(
-                        application.status
-                      )}`}
-                    >
-                      {getStatusIcon(application.status)}
-                      {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
-                    </span>
+                    <StatusBadge status={application.status} />
                     <span className="rounded-full bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm">
                       Applied {formatDate(application.createdAt)}
                     </span>
@@ -356,11 +330,10 @@ const ApplicantsPage = () => {
                           href={resumeUrl || "#"}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                            resumeUrl
-                              ? "bg-black text-white hover:bg-slate-900"
-                              : "cursor-not-allowed bg-slate-300 text-slate-600"
-                          }`}
+                          className={buttonClassName({
+                            fullWidth: true,
+                            className: `gap-2 ${!resumeUrl ? "pointer-events-none opacity-50" : ""}`,
+                          })}
                           onClick={(e) => {
                             if (!resumeUrl) e.preventDefault();
                           }}
@@ -373,11 +346,11 @@ const ApplicantsPage = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                           download
-                          className={`inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100 ${
-                            resumeUrl
-                              ? ""
-                              : "cursor-not-allowed opacity-60"
-                          }`}
+                          className={buttonClassName({
+                            variant: "secondary",
+                            fullWidth: true,
+                            className: `gap-2 ${!resumeUrl ? "pointer-events-none opacity-50" : ""}`,
+                          })}
                           onClick={(e) => {
                             if (!resumeUrl) e.preventDefault();
                           }}
@@ -392,10 +365,8 @@ const ApplicantsPage = () => {
                       <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
                         Update Status
                       </p>
-                      <label className="block text-sm font-medium text-slate-700">
-                        Review outcome
-                      </label>
-                      <select
+                      <AppSelect
+                        label="Review outcome"
                         value={application.status}
                         onChange={(e) =>
                           handleStatusUpdate(
@@ -404,27 +375,28 @@ const ApplicantsPage = () => {
                           )
                         }
                         disabled={statusUpdating[application._id]}
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10"
+                        wrapperClassName="mt-2"
                       >
                         {statusOptions.map((option) => (
                           <option key={option.value} value={option.value}>
                             {option.label}
                           </option>
                         ))}
-                      </select>
-                      <button
+                      </AppSelect>
+                      <AppButton
                         type="button"
+                        fullWidth
+                        className="mt-4 gap-2"
                         onClick={() => openDetails(application)}
-                        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-black transition"
                       >
                         <FileText className="h-4 w-4" />
                         View Details
-                      </button>
+                      </AppButton>
                     </div>
                   </aside>
                 </div>
               </div>
-            </article>
+            </AppCard>
           );
         })}
       </div>
@@ -517,17 +489,15 @@ const ApplicantsPage = () => {
                       Access the candidate's resume directly from the application record.
                     </p>
                   </div>
-                  <span
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusBadge(
-                      selectedApplication.applicant?.currentResume?.resumeUrl || selectedApplication.applicant?.resume || selectedApplication.resume
+                  <StatusBadge
+                    status={
+                      selectedApplication.applicant?.currentResume?.resumeUrl ||
+                      selectedApplication.applicant?.resume ||
+                      selectedApplication.resume
                         ? "accepted"
                         : "pending"
-                    )}`}
-                  >
-                    {selectedApplication.applicant?.currentResume?.resumeUrl || selectedApplication.applicant?.resume || selectedApplication.resume
-                      ? "Resume available"
-                      : "No resume uploaded"}
-                  </span>
+                    }
+                  />
                 </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -540,11 +510,19 @@ const ApplicantsPage = () => {
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-black ${
-                      selectedApplication.applicant?.currentResume?.resumeUrl || selectedApplication.applicant?.resume || selectedApplication.resume
-                        ? ""
-                        : "cursor-not-allowed opacity-60"
-                    }`}
+                    className={buttonClassName({
+                      fullWidth: true,
+                      className: `gap-2 ${
+                        !(
+                          selectedApplication.applicant?.currentResume
+                            ?.resumeUrl ||
+                          selectedApplication.applicant?.resume ||
+                          selectedApplication.resume
+                        )
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }`,
+                    })}
                     onClick={(e) => {
                       if (!selectedApplication.applicant?.currentResume?.resumeUrl && !selectedApplication.applicant?.resume && !selectedApplication.resume) {
                         e.preventDefault();
@@ -564,11 +542,20 @@ const ApplicantsPage = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     download
-                    className={`inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100 ${
-                      selectedApplication.applicant?.currentResume?.resumeUrl || selectedApplication.applicant?.resume || selectedApplication.resume
-                        ? ""
-                        : "cursor-not-allowed opacity-60"
-                    }`}
+                    className={buttonClassName({
+                      variant: "secondary",
+                      fullWidth: true,
+                      className: `gap-2 ${
+                        !(
+                          selectedApplication.applicant?.currentResume
+                            ?.resumeUrl ||
+                          selectedApplication.applicant?.resume ||
+                          selectedApplication.resume
+                        )
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }`,
+                    })}
                     onClick={(e) => {
                       if (!selectedApplication.applicant?.currentResume?.resumeUrl && !selectedApplication.applicant?.resume && !selectedApplication.resume) {
                         e.preventDefault();

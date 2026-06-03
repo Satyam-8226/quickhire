@@ -1,29 +1,44 @@
+import { cn } from "../../utils/cn";
+
 const statusMap = {
   pending: {
-    label: "Pending",
-    styles: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    label: "Applied",
+    styles: "bg-blue-100 text-blue-700",
+  },
+  applied: {
+    label: "Applied",
+    styles: "bg-blue-100 text-blue-700",
   },
   reviewed: {
     label: "Reviewed",
-    styles: "bg-blue-100 text-blue-800 border-blue-200",
+    styles: "bg-purple-100 text-purple-700",
+  },
+  interview: {
+    label: "Interview",
+    styles: "bg-amber-100 text-amber-700",
   },
   accepted: {
     label: "Accepted",
-    styles: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    styles: "bg-green-100 text-green-700",
   },
   rejected: {
     label: "Rejected",
-    styles: "bg-red-100 text-red-800 border-red-200",
+    styles: "bg-red-100 text-red-700",
   },
 };
 
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({ status, className = "" }) => {
   const normalized = String(status || "pending").toLowerCase();
   const config = statusMap[normalized] || statusMap.pending;
 
   return (
-    <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase ${config.styles}`}>
-      <span className="h-2.5 w-2.5 rounded-full bg-current inline-block"></span>
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium capitalize",
+        config.styles,
+        className
+      )}
+    >
       {config.label}
     </span>
   );

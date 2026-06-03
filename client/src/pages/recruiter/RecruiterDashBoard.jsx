@@ -1,16 +1,25 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
 import {
-  getMyJobs,
-  getRecruiterStats,
-} from "../../api/jobApi";
-import StatsCard from "../../components/dashboard/StatsCard";
-import ErrorState from "../../components/common/ErrorState";
-import { Briefcase, Plus, Users, Clock, CheckCircle2, Eye, XCircle } from "lucide-react";
-import DashboardSkeleton from "../../components/skeletons/DashboardSkeleton";
+  Briefcase,
+  Plus,
+  Users,
+  Clock,
+  CheckCircle2,
+  Eye,
+  XCircle,
+  ArrowRight,
+} from "lucide-react";
 import toast from "react-hot-toast";
+
+import { getMyJobs, getRecruiterStats } from "../../api/jobApi";
+import StatCard from "../../components/ui/StatCard";
+import SectionCard from "../../components/ui/SectionCard";
+import ErrorState from "../../components/common/ErrorState";
+import DashboardSkeleton from "../../components/skeletons/DashboardSkeleton";
 import { getErrorMessage } from "../../utils/errorMessage";
+import { AppButtonLink } from "../../components/ui/AppButton";
+import AppCard from "../../components/ui/AppCard";
 
 const RecruiterDashboard = () => {
   const [jobs, setJobs] = useState([]);
@@ -66,162 +75,131 @@ const RecruiterDashboard = () => {
 
   if (error) {
     return (
-      <ErrorState
-        title="Failed to load dashboard"
-        message={error}
-      />
+      <ErrorState title="Failed to load dashboard" message={error} />
     );
   }
 
-  const statusData = [
-    {
-      name: "Pending",
-      count: stats.pending,
-      fill: "#f59e0b",
-    },
-    {
-      name: "Reviewed",
-      count: stats.reviewed,
-      fill: "#2563eb",
-    },
-    {
-      name: "Accepted",
-      count: stats.accepted,
-      fill: "#10b981",
-    },
-    {
-      name: "Rejected",
-      count: stats.rejected,
-      fill: "#ef4444",
-    },
-  ];
-
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="mx-auto max-w-7xl">
+      <header className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900">Recruiter Dashboard</h1>
-          <p className="mt-2 max-w-2xl text-gray-600">
-            Monitor your jobs, track candidate interest, and manage applicant progress in one place.
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+            Recruiter Dashboard
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm text-slate-500">
+            Monitor your jobs, track candidate interest, and manage applicant
+            progress in one place.
           </p>
         </div>
-        <Link
-          to="/recruiter/create-job"
-          className="inline-flex items-center gap-2 rounded-3xl bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-900"
-        >
+        <AppButtonLink to="/recruiter/create-job" className="shrink-0 gap-2">
           <Plus className="h-4 w-4" />
           Post New Job
-        </Link>
-      </div>
+        </AppButtonLink>
+      </header>
 
-      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 mb-10">
-        <StatsCard
+      <div className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <StatCard
           title="Jobs Posted"
           value={stats.totalJobs}
-          icon={<Briefcase className="h-6 w-6" />}
+          icon={<Briefcase className="h-5 w-5" />}
+          description="Active listings"
         />
-        <StatsCard
+        <StatCard
           title="Applicants"
           value={stats.totalApplicants}
-          icon={<Users className="h-6 w-6" />}
+          icon={<Users className="h-5 w-5" />}
+          description="Total applications"
         />
-        <StatsCard
+        <StatCard
           title="Pending"
           value={stats.pending}
-          icon={<Clock className="h-6 w-6" />}
+          icon={<Clock className="h-5 w-5" />}
+          description="Awaiting review"
         />
-        <StatsCard
+        <StatCard
           title="Reviewed"
           value={stats.reviewed}
-          icon={<Eye className="h-6 w-6" />}
+          icon={<Eye className="h-5 w-5" />}
+          description="In progress"
         />
-        <StatsCard
+        <StatCard
           title="Accepted"
           value={stats.accepted}
-          icon={<CheckCircle2 className="h-6 w-6" />}
+          icon={<CheckCircle2 className="h-5 w-5" />}
+          description="Offers extended"
         />
-        <StatsCard
+        <StatCard
           title="Rejected"
           value={stats.rejected}
-          icon={<XCircle className="h-6 w-6" />}
+          icon={<XCircle className="h-5 w-5" />}
+          description="Closed applications"
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-        <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-gray-500">Hiring Analytics</p>
-              <h2 className="mt-2 text-2xl font-semibold text-gray-900">Application Status Overview</h2>
-            </div>
-            <span className="rounded-2xl bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600">Live recruiter stats</span>
-          </div>
-            <div className="bg-white rounded-xl border p-8 mb-12">
-              <h2 className="text-2xl font-bold mb-2">
-                Application Analytics
-              </h2>
+      <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
+        <SectionCard
+          title="Application Analytics"
+          subtitle="Analytics charts coming soon."
+          hover={false}
+        >
+          <AppCard hover={false} className="border-dashed bg-slate-50/50 !p-8 text-center">
+            <p className="text-sm text-slate-500">
+              Visual insights for your hiring pipeline will appear here.
+            </p>
+          </AppCard>
+        </SectionCard>
 
-              <p className="text-gray-500">
-                Analytics charts coming soon.
-              </p>
-            </div>
-          </div>
-
-        <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-gray-500">Recent Postings</p>
-              <h2 className="mt-2 text-2xl font-semibold text-gray-900">Latest Jobs</h2>
-            </div>
+        <SectionCard
+          title="Latest Jobs"
+          subtitle="Your most recent postings"
+          actions={
             <Link
               to="/recruiter/jobs"
-              className="text-sm font-semibold text-black hover:underline"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-brand hover:text-brand-hover"
             >
-              View All Jobs
+              View all
+              <ArrowRight className="h-4 w-4" />
             </Link>
-          </div>
-
+          }
+        >
           {jobs.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-gray-200 p-8 text-center text-gray-600">
-              <p className="text-lg font-semibold text-gray-900 mb-3">No job postings yet</p>
-              <p className="mb-5 text-sm leading-6">Create your first opening and start attracting top candidates.</p>
-              <Link
-                to="/recruiter/create-job"
-                className="inline-flex items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-900"
-              >
-                Create Job
-              </Link>
+            <div className="rounded-3xl border border-dashed border-slate-200 p-8 text-center">
+              <p className="text-lg font-semibold text-slate-900 mb-2">
+                No job postings yet
+              </p>
+              <p className="mb-6 text-sm text-slate-500">
+                Create your first opening and start attracting top candidates.
+              </p>
+              <AppButtonLink to="/recruiter/create-job">Create Job</AppButtonLink>
             </div>
           ) : (
             <div className="space-y-4">
               {jobs.slice(0, 5).map((job) => (
                 <div
                   key={job._id}
-                  className="rounded-3xl border border-gray-200 p-5 transition hover:border-black"
+                  className="rounded-2xl border border-slate-100 p-5 transition-colors hover:bg-brand-light/30"
                 >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{job.title}</h3>
-                      <p className="mt-1 text-sm text-gray-600">{job.company}</p>
+                      <h3 className="font-semibold text-slate-900">{job.title}</h3>
+                      <p className="text-sm text-slate-500">{job.company}</p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                      <span>{new Date(job.createdAt).toLocaleDateString()}</span>
-                      <span className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1">
-                        <Users className="h-4 w-4" />
-                        {job.applicantCount || 0} applicants
-                      </span>
-                    </div>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-medium text-brand">
+                      <Users className="h-3.5 w-3.5" />
+                      {job.applicantCount || 0} applicants
+                    </span>
                   </div>
-                  <p className="mt-4 text-sm leading-6 text-gray-600 line-clamp-2">{job.description}</p>
+                  <p className="mt-3 line-clamp-2 text-sm text-slate-500">
+                    {job.description}
+                  </p>
                 </div>
               ))}
             </div>
           )}
-        </div>
+        </SectionCard>
       </div>
     </div>
   );
 };
 
 export default RecruiterDashboard;
-

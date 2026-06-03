@@ -1,47 +1,32 @@
 import { useEffect, useState } from "react";
-
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
-
+import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import {
-  getSingleJob,
-  updateJob,
-} from "../../api/jobApi";
-
+import { getSingleJob, updateJob } from "../../api/jobApi";
 import JobForm from "../../components/jobs/JobForm";
-
 import Loader from "../../components/common/Loader";
 import ErrorState from "../../components/common/ErrorState";
-import { showErrorToast } from "../../utils/errorMessage";
+import { getErrorMessage, showErrorToast } from "../../utils/errorMessage";
+import AppCard from "../../components/ui/AppCard";
+import PageHeader from "../../components/ui/PageHeader";
 
 const EditJob = () => {
   const navigate = useNavigate();
-
   const { id } = useParams();
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const [submitting, setSubmitting] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
-
-  const [formData, setFormData] =
-    useState({
-      title: "",
-      company: "",
-      location: "",
-      jobType: "",
-      salary: "",
-      description: "",
-      requirements: "",
-    });
+  const [formData, setFormData] = useState({
+    title: "",
+    company: "",
+    location: "",
+    jobType: "",
+    salary: "",
+    description: "",
+    requirements: "",
+  });
 
   useEffect(() => {
     fetchJob();
@@ -52,33 +37,22 @@ const EditJob = () => {
       setLoading(true);
       setError("");
 
-      const data =
-        await getSingleJob(id);
-
+      const data = await getSingleJob(id);
       const job = data.job;
 
       setFormData({
         title: job.title || "",
         company: job.company || "",
         location: job.location || "",
-        jobType:
-          job.jobType || "",
+        jobType: job.jobType || "",
         salary: job.salary || "",
-        description:
-          job.description || "",
-
-        requirements:
-          Array.isArray(
-            job.requirements
-          )
-            ? job.requirements.join(
-                ", "
-              )
-            : job.requirements || "",
+        description: job.description || "",
+        requirements: Array.isArray(job.requirements)
+          ? job.requirements.join(", ")
+          : job.requirements || "",
       });
     } catch (err) {
-      const message = showErrorToast(err, "Failed to load job");
-      setError(message);
+      setError(getErrorMessage(err, "Failed to load job"));
     } finally {
       setLoading(false);
     }
@@ -87,8 +61,7 @@ const EditJob = () => {
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]:
-        e.target.value,
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -100,30 +73,16 @@ const EditJob = () => {
 
       const payload = {
         ...formData,
-
         salary: formData.salary.trim(),
-
-        requirements:
-          formData.requirements
-            .split(",")
-            .map((item) =>
-              item.trim()
-            )
-            .filter(Boolean),
+        requirements: formData.requirements
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
       };
 
-      await updateJob(
-        id,
-        payload
-      );
-
-      toast.success(
-        "Job updated successfully"
-      );
-
-      navigate(
-        "/recruiter/jobs"
-      );
+      await updateJob(id, payload);
+      toast.success("Job updated successfully");
+      navigate("/recruiter/jobs");
     } catch (error) {
       showErrorToast(error, "Failed to update job");
     } finally {
@@ -132,9 +91,7 @@ const EditJob = () => {
   };
 
   if (loading) {
-    return (
-      <Loader message="Loading job..." />
-    );
+    return <Loader message="Loading job..." />;
   }
 
   if (error) {
@@ -148,19 +105,13 @@ const EditJob = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white rounded-xl shadow-sm p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">
-            Edit Job
-          </h1>
+    <div className="mx-auto max-w-4xl">
+      <PageHeader
+        title="Edit Job"
+        description="Update your job details and requirements"
+      />
 
-          <p className="text-gray-600">
-            Update your job details and
-            requirements
-          </p>
-        </div>
-
+      <AppCard hover={false} className="p-8">
         <JobForm
           formData={formData}
           handleChange={handleChange}
@@ -168,7 +119,7 @@ const EditJob = () => {
           loading={submitting}
           buttonText="Update Job"
         />
-      </div>
+      </AppCard>
     </div>
   );
 };

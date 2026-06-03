@@ -1,16 +1,18 @@
 const PageHeader = ({ title, description, cta }) => {
   return (
     <div className="mb-10">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
             {title}
           </h1>
-          <p className="max-w-2xl text-gray-600 leading-7">
-            {description}
-          </p>
+          {description && (
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-500">
+              {description}
+            </p>
+          )}
         </div>
-        {cta && <div>{cta}</div>}
+        {cta && <div className="shrink-0">{cta}</div>}
       </div>
     </div>
   );

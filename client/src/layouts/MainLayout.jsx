@@ -3,16 +3,10 @@ import Footer from "../components/layout/Footer";
 
 function MainLayout({ children }) {
   return (
-    <div className="min-h-screen flex flex-col">
-
+    <div className="flex min-h-screen flex-col bg-surface">
       <Navbar />
-
-      <main className="grow">
-        {children}
-      </main>
-
+      <main className="grow">{children}</main>
       <Footer />
-
     </div>
   );
 }

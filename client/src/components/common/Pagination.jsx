@@ -1,7 +1,6 @@
-import {
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "../../utils/cn";
+import AppButton from "../ui/AppButton";
 
 const Pagination = ({
   currentPage = 1,
@@ -10,55 +9,47 @@ const Pagination = ({
 }) => {
   if (totalPages <= 1) return null;
 
-  const handlePrev = () => {
-    if (currentPage > 1) {
-      onPageChange(currentPage - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentPage < totalPages) {
-      onPageChange(currentPage + 1);
-    }
-  };
-
   return (
-    <div className="flex items-center justify-center gap-2 mt-8">
-      <button
-        onClick={handlePrev}
+    <div className="mt-10 flex items-center justify-center gap-2">
+      <AppButton
+        variant="secondary"
+        size="md"
+        onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="p-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+        className="!h-10 !w-10 !px-0"
+        aria-label="Previous page"
       >
-        <ChevronLeft className="w-5 h-5" />
-      </button>
+        <ChevronLeft className="h-5 w-5" />
+      </AppButton>
 
       <div className="flex gap-1">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-          (page) => (
-            <button
-              key={page}
-              onClick={() =>
-                onPageChange(page)
-              }
-              className={`px-3 py-2 rounded-lg font-medium transition ${
-                page === currentPage
-                  ? "bg-black text-white"
-                  : "border hover:bg-gray-100"
-              }`}
-            >
-              {page}
-            </button>
-          )
-        )}
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <button
+            key={page}
+            type="button"
+            onClick={() => onPageChange(page)}
+            className={cn(
+              "h-10 min-w-10 rounded-xl px-3 text-sm font-semibold transition-all duration-200",
+              page === currentPage
+                ? "bg-brand text-white shadow-sm shadow-brand/20"
+                : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+            )}
+          >
+            {page}
+          </button>
+        ))}
       </div>
 
-      <button
-        onClick={handleNext}
+      <AppButton
+        variant="secondary"
+        size="md"
+        onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="p-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+        className="!h-10 !w-10 !px-0"
+        aria-label="Next page"
       >
-        <ChevronRight className="w-5 h-5" />
-      </button>
+        <ChevronRight className="h-5 w-5" />
+      </AppButton>
     </div>
   );
 };

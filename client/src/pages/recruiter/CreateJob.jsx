@@ -5,10 +5,11 @@ import toast from "react-hot-toast";
 import { createJob } from "../../api/jobApi";
 import JobForm from "../../components/jobs/JobForm";
 import { showErrorToast } from "../../utils/errorMessage";
+import AppCard from "../../components/ui/AppCard";
+import PageHeader from "../../components/ui/PageHeader";
 
 const CreateJob = () => {
   const navigate = useNavigate();
-
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -36,9 +37,7 @@ const CreateJob = () => {
 
       const payload = {
         ...formData,
-
         salary: formData.salary.trim(),
-
         requirements: formData.requirements
           .split(",")
           .map((item) => item.trim())
@@ -46,11 +45,7 @@ const CreateJob = () => {
       };
 
       await createJob(payload);
-
-      toast.success(
-        "Job created successfully"
-      );
-
+      toast.success("Job created successfully");
       navigate("/recruiter/jobs");
     } catch (error) {
       showErrorToast(error, "Failed to create job");
@@ -60,12 +55,13 @@ const CreateJob = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white shadow-md rounded-lg p-8">
-        <h1 className="text-3xl font-bold mb-6">
-          Create New Job
-        </h1>
+    <div className="mx-auto max-w-4xl">
+      <PageHeader
+        title="Create New Job"
+        description="Publish a new opening and start receiving applications from qualified candidates."
+      />
 
+      <AppCard hover={false} className="p-8">
         <JobForm
           formData={formData}
           handleChange={handleChange}
@@ -73,7 +69,7 @@ const CreateJob = () => {
           loading={loading}
           buttonText="Create Job"
         />
-      </div>
+      </AppCard>
     </div>
   );
 };
