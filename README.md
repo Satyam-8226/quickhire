@@ -1,170 +1,125 @@
 # QuickHire AI
 
-An AI-powered recruitment platform connecting recruiters and candidates through a modern MERN stack application.
+QuickHire AI is a full-stack recruitment platform for candidates and recruiters. Candidates can browse jobs, upload resumes, apply, and track their applications, while recruiters can post jobs, review applicants, and update application status.
 
-## Project Overview
+## What this project includes
 
-QuickHire AI is a modern hiring platform built with React, Vite, Tailwind CSS, Node.js, Express, MongoDB Atlas, and JWT authentication. The application enables candidates to discover jobs, apply with resume support, and track applications while recruiters post jobs, review applicants, and manage application statuses.
+- React 19 + Vite frontend with Tailwind CSS
+- Express + MongoDB backend with JWT authentication
+- Resume upload and version management using Cloudinary + Multer
+- Role-based routes for candidates and recruiters
+- Toast-based feedback and reusable dashboard UI components
 
-## Features
+## Tech stack
 
-- Candidate registration, login, and dashboard
-- Recruiter registration, login, and job management
-- Job search, detail view, and application submission
-- Resume upload and profile-backed application creation
-- Duplicate application prevention
-- Recruiter applicant listing and status updates
-- JWT-based authentication with role authorization
-- Centralized error handling and enhanced request logging
-
-## Architecture
-
-The project follows a client-server architecture:
-
-- Frontend: React + Vite + Tailwind CSS
-- Backend: Node.js + Express
+- Frontend: React, Vite, React Router, Axios, react-hot-toast, Tailwind CSS
+- Backend: Node.js, Express, Mongoose, JWT, Cloudinary, Multer
 - Database: MongoDB Atlas
-- Authentication: JWT stored in browser local storage
-- API client: Axios with automatic token injection
 
-## Folder Structure
+## Prerequisites
 
-```
-quickhire-ai/
-├── client/                    # Frontend application
-│   ├── public/
-│   └── src/
-│       ├── api/               # Axios clients and API helpers
-│       ├── components/        # Reusable UI components
-│       ├── context/           # Auth and app state context
-│       ├── layouts/           # Route layout wrappers
-│       ├── pages/             # Page-level views
-│       ├── routes/            # Route configuration and protections
-│       └── utils/             # Utility functions
-├── server/                    # Backend API server
-│   ├── src/
-│       ├── config/            # Database and Cloudinary config
-│       ├── controllers/       # Route handlers
-│       ├── middlewares/       # Auth, error handling, logging
-│       ├── models/            # Mongoose schemas
-│       ├── routes/            # API route definitions
-│       ├── utils/             # Helpers and token generation
-│   └── app.js                 # Express app setup
-└── README.md                  # Project documentation
-```
+Before you run the app locally, make sure you have:
 
-## Installation
+- Node.js 18+ and npm
+- A MongoDB Atlas connection string
+- A Cloudinary account for resume uploads
 
-1. Clone the repository:
+## Getting started
+
+1. Clone the repository and enter the project folder:
    ```bash
    git clone https://github.com/Satyam-8226/quickhire.git
    cd quickhire-ai
    ```
-2. Install dependencies for both backend and frontend.
 
-## Environment Variables
+2. Install dependencies in both apps:
+   ```bash
+   cd server && npm install
+   cd ../client && npm install
+   ```
 
-Create `.env` files in the `server` folder with the following variables:
+3. Create a `.env` file in `server/` with the variables below:
+   ```env
+   PORT=5000
+   MONGO_URI=<your-mongodb-connection-string>
+   JWT_SECRET=<your-jwt-secret>
+   NODE_ENV=development
+   CLOUDINARY_CLOUD_NAME=<your-cloudinary-cloud-name>
+   CLOUDINARY_API_KEY=<your-cloudinary-api-key>
+   CLOUDINARY_API_SECRET=<your-cloudinary-api-secret>
+   ```
 
-```env
-PORT=5000
-MONGO_URI=<your-mongodb-connection-string>
-JWT_SECRET=<your-jwt-secret>
-NODE_ENV=development
-CLOUDINARY_CLOUD_NAME=<cloudinary-cloud-name>
-CLOUDINARY_API_KEY=<cloudinary-api-key>
-CLOUDINARY_API_SECRET=<cloudinary-api-secret>
-```
+   The backend validates `MONGO_URI` and `JWT_SECRET` at startup. Cloudinary credentials are required for resume upload and resume viewing.
 
-## Backend Setup
-
-1. Navigate to the backend folder:
+4. Start the backend:
    ```bash
    cd server
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the backend server:
-   ```bash
    npm run dev
    ```
 
-## Frontend Setup
-
-1. Navigate to the frontend folder:
+5. Start the frontend in another terminal:
    ```bash
    cd client
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the frontend app:
-   ```bash
    npm run dev
    ```
 
-## Running Locally
+6. Open the app at:
+   ```text
+   http://localhost:5173
+   ```
 
-1. Start the backend server in `server/`.
-2. Start the frontend app in `client/`.
-3. Open the browser at the URL provided by Vite (typically `http://localhost:5173`).
-
-## API Overview
+## Main API routes
 
 ### Auth
-- `POST /api/auth/register` — register a new user
-- `POST /api/auth/login` — login and receive JWT
-- `GET /api/auth/me` — retrieve authenticated user profile
+- `POST /api/auth/register` — register a user
+- `POST /api/auth/login` — sign in and receive a JWT
+- `GET /api/auth/me` — fetch the current authenticated user
 
 ### Jobs
-- `GET /api/jobs` — list jobs
-- `GET /api/jobs/:id` — get job details
-- `POST /api/jobs` — create a new job (recruiter only)
-- `PUT /api/jobs/:id` — edit a job (recruiter only)
+- `GET /api/jobs` — list all jobs
+- `GET /api/jobs/:id` — get a job by ID
+- `GET /api/jobs/my-jobs` — recruiter-owned jobs
+- `GET /api/jobs/stats` — recruiter dashboard stats
+- `POST /api/jobs` — create a job (recruiter only)
+- `PUT /api/jobs/:id` — update a job (recruiter only)
+- `DELETE /api/jobs/:id` — delete a job (recruiter only)
 
-### Applications
-- `POST /api/applications/:jobId` — apply to a job (candidate only)
-- `GET /api/applications/me` — candidate application history
-- `PUT /api/applications/upload-resume` — upload candidate resume
-- `GET /api/applications/job/:jobId` — recruiter view applicants for a job
-- `PUT /api/applications/:applicationId` — recruiter update application status
+### Applications and resumes
+- `GET /api/applications/me` — candidate applications
+- `POST /api/applications/:jobId` — apply to a job
+- `PUT /api/applications/upload-resume` — upload a resume
+- `GET /api/applications/resumes` — list uploaded resume versions
+- `PATCH /api/applications/resumes/:versionId/activate` — activate a resume version
+- `GET /api/applications/job/:jobId` — recruiter view of applicants for a job
+- `PUT /api/applications/:applicationId` — update application status
 
-## Authentication Flow
+## Project structure
 
-- Candidates and recruiters sign up with email and password.
-- The backend returns a JWT token after login/register.
-- The frontend stores the token in local storage and attaches it to API requests.
-- Protected API routes validate the JWT and authorize the user role.
+```text
+quickhire-ai/
+├── client/               # Vite + React frontend
+│   └── src/
+│       ├── api/
+│       ├── components/
+│       ├── context/
+│       ├── pages/
+│       └── routes/
+└── server/               # Express + MongoDB backend
+    └── src/
+        ├── config/
+        ├── controllers/
+        ├── middlewares/
+        ├── models/
+        ├── routes/
+        └── validators/
+```
 
-## Candidate Workflow
+## Notes
 
-1. Register as a candidate.
-2. Login and view jobs.
-3. Visit job details and click `Apply Now`.
-4. Upload resume on the candidate resume page.
-5. Track submitted applications via the candidate dashboard.
+- The backend uses JWTs stored in browser local storage and validates them on protected routes.
+- Resume uploads are stored via Cloudinary, so the app needs valid Cloudinary credentials to work end to end.
+- For frontend API calls, the client defaults to `http://localhost:5000/api` unless `VITE_API_URL` is set in `client/.env`.
 
-## Recruiter Workflow
-
-1. Register or login as a recruiter.
-2. Create and manage jobs.
-3. View applicants for a job.
-4. Update candidate application statuses.
-
-## Future Enhancements
-
-- Add AI-powered resume matching and candidate recommendations.
-- Support candidate profiles with multiple resumes, portfolios, and skills.
-- Add notifications, email alerts, and chat.
-- Improve reporting and analytics for recruiter dashboards.
-- Add Socket.IO real-time updates for applications and chat.
-
-
-## Author Information
+## Author
 
 Built by Satyam Pandey.
-
-For questions or contributions, please open an issue or submit a pull request.
