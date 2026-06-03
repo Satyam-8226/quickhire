@@ -9,6 +9,8 @@ import StatsCard from "../../components/dashboard/StatsCard";
 import ErrorState from "../../components/common/ErrorState";
 import { Briefcase, Plus, Users, Clock, CheckCircle2, Eye, XCircle } from "lucide-react";
 import DashboardSkeleton from "../../components/skeletons/DashboardSkeleton";
+import toast from "react-hot-toast";
+import { getErrorMessage } from "../../utils/errorMessage";
 
 const RecruiterDashboard = () => {
   const [jobs, setJobs] = useState([]);
@@ -47,10 +49,9 @@ const RecruiterDashboard = () => {
           }
         );
       } catch (err) {
-        setError(
-          err.response?.data?.message ||
-            "Failed to load recruiter dashboard"
-        );
+        const message = getErrorMessage(err, "Failed to load recruiter dashboard");
+        setError(message);
+        toast.error(message);
       } finally {
         setLoading(false);
       }

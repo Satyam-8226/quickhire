@@ -11,6 +11,8 @@ import EmptyState from "../../components/common/EmptyState";
 import ErrorState from "../../components/common/ErrorState";
 import Pagination from "../../components/common/Pagination";
 import JobCardSkeleton from "../../components/skeletons/JobCardSkeleton";
+import toast from "react-hot-toast";
+import { getErrorMessage } from "../../utils/errorMessage";
 
 const JobsPage = () => {
   // ===============================
@@ -74,10 +76,9 @@ const JobsPage = () => {
 
       setTotalPages(data.totalPages);
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Failed to fetch jobs"
-      );
+      const message = getErrorMessage(err, "Failed to fetch jobs");
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

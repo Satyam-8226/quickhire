@@ -23,6 +23,7 @@ import Loader from "../../components/common/Loader";
 import ErrorState from "../../components/common/ErrorState";
 
 import { useAuth } from "../../context/AuthContext";
+import { getErrorMessage } from "../../utils/errorMessage";
 
 
 function JobDetailsPage() {
@@ -66,10 +67,9 @@ function JobDetailsPage() {
 
         setJob(data.job);
       } catch (err) {
-        setError(
-          err.response?.data?.message ||
-            "Failed to load job"
-        );
+        const message = getErrorMessage(err, "Failed to load job");
+        setError(message);
+        toast.error(message);
       } finally {
         setLoading(false);
       }
@@ -111,10 +111,7 @@ function JobDetailsPage() {
         "/candidate/applications"
       );
     } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          "Failed to apply for job"
-      );
+      toast.error(getErrorMessage(err, "Failed to apply for job"));
     } finally {
       setApplying(false);
     }

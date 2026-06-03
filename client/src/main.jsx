@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { Toaster } from 'react-hot-toast'
 import App from './App.jsx'
 import './index.css'
 
@@ -7,10 +8,9 @@ import AuthProvider from './context/AuthContext.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-
     <AuthProvider>
+      <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <App />
     </AuthProvider>
-
   </React.StrictMode>,
 )

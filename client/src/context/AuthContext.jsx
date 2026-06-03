@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import api from "../api/axios";
+import { getErrorMessage } from "../utils/errorMessage";
 
 const AuthContext = createContext();
 
@@ -57,7 +59,7 @@ function AuthProvider({ children }) {
             localStorage.setItem("user", JSON.stringify(normalizedUser));
           }
         } catch (error) {
-          console.error("Failed to refresh authenticated user", error);
+          toast.error(getErrorMessage(error, "Session expired. Please log in again."));
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           setUser(null);

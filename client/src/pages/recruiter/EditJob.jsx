@@ -16,6 +16,7 @@ import JobForm from "../../components/jobs/JobForm";
 
 import Loader from "../../components/common/Loader";
 import ErrorState from "../../components/common/ErrorState";
+import { showErrorToast } from "../../utils/errorMessage";
 
 const EditJob = () => {
   const navigate = useNavigate();
@@ -76,11 +77,8 @@ const EditJob = () => {
             : job.requirements || "",
       });
     } catch (err) {
-      setError(
-        err.response?.data
-          ?.message ||
-          "Failed to load job"
-      );
+      const message = showErrorToast(err, "Failed to load job");
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -127,13 +125,7 @@ const EditJob = () => {
         "/recruiter/jobs"
       );
     } catch (error) {
-      console.log(error);
-
-      toast.error(
-        error.response?.data
-          ?.message ||
-          "Failed to update job"
-      );
+      showErrorToast(error, "Failed to update job");
     } finally {
       setSubmitting(false);
     }

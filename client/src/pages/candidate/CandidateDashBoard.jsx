@@ -4,6 +4,8 @@ import { Link } from "react-router-dom"
 
 import { useAuth } from "../../context/AuthContext"
 import { getMyApplications } from "../../api/applicationApi"
+import toast from "react-hot-toast"
+import { getErrorMessage } from "../../utils/errorMessage"
 
 import Loader from "../../components/common/Loader"
 import ErrorState from "../../components/common/ErrorState"
@@ -39,10 +41,9 @@ const CandidateDashboard = () => {
       const data = await getMyApplications()
       setApplications(data?.applications || [])
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Failed to load your dashboard data"
-      )
+      const message = getErrorMessage(err, "Failed to load your dashboard data")
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }

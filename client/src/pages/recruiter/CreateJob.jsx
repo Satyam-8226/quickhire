@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 
 import { createJob } from "../../api/jobApi";
 import JobForm from "../../components/jobs/JobForm";
+import { showErrorToast } from "../../utils/errorMessage";
 
 const CreateJob = () => {
   const navigate = useNavigate();
@@ -52,12 +53,7 @@ const CreateJob = () => {
 
       navigate("/recruiter/jobs");
     } catch (error) {
-      console.log(error);
-
-      toast.error(
-        error.response?.data?.message ||
-          "Failed to create job"
-      );
+      showErrorToast(error, "Failed to create job");
     } finally {
       setLoading(false);
     }

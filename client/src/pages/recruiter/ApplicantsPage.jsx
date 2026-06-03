@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 
 import ApplicantSkeleton from "../../components/skeletons/ApplicationSkeleton";
+import { getErrorMessage } from "../../utils/errorMessage";
 
 const statusOptions = [
   { value: "pending", label: "Pending" },
@@ -89,10 +90,9 @@ const ApplicantsPage = () => {
       const data = await getJobApplicants(id);
       setApplications(data.applications || []);
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Failed to fetch applicants"
-      );
+      const message = getErrorMessage(err, "Failed to fetch applicants");
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -135,10 +135,7 @@ const ApplicantsPage = () => {
 
       toast.success("Application status updated");
     } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          "Unable to update status"
-      );
+      toast.error(getErrorMessage(err, "Unable to update status"));
     } finally {
       setStatusUpdating((prev) => ({
         ...prev,

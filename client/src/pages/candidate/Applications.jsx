@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
+import toast from "react-hot-toast";
+
 import { getMyApplications } from "../../api/applicationApi";
+import { getErrorMessage } from "../../utils/errorMessage";
 
 import Loader from "../../components/common/Loader";
 import EmptyState from "../../components/common/EmptyState";
@@ -39,10 +42,9 @@ const Applications = () => {
         data?.applications || []
       );
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Failed to fetch applications"
-      );
+      const message = getErrorMessage(err, "Failed to fetch applications");
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

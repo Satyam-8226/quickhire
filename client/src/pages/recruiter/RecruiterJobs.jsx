@@ -10,6 +10,7 @@ import Loader from "../../components/common/Loader";
 import EmptyState from "../../components/common/EmptyState";
 import ErrorState from "../../components/common/ErrorState";
 import { Plus } from "lucide-react";
+import { getErrorMessage } from "../../utils/errorMessage";
 
 function RecruiterJobs() {
   const navigate = useNavigate();
@@ -30,10 +31,9 @@ function RecruiterJobs() {
 
       setJobs(data.jobs);
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Failed to fetch jobs"
-      );
+      const message = getErrorMessage(err, "Failed to fetch jobs");
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -60,10 +60,7 @@ function RecruiterJobs() {
         prev.filter((job) => job._id !== jobId)
       );
     } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          "Failed to delete job"
-      );
+      toast.error(getErrorMessage(err, "Failed to delete job"));
     }
   };
 

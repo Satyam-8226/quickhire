@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 
 import { useAuth } from "../../context/AuthContext";
 import { activateResume, getMyResumes, uploadResume } from "../../api/applicationApi";
+import { getErrorMessage, showErrorToast } from "../../utils/errorMessage";
 
 import PageHeader from "../../components/ui/PageHeader";
 import SectionCard from "../../components/ui/SectionCard";
@@ -31,7 +32,7 @@ const Resume = () => {
         const response = await getMyResumes();
         setResumeHistory(response?.history || []);
       } catch (error) {
-        console.error("Failed to load resume history", error);
+        showErrorToast(error, "Failed to load resume history");
       } finally {
         setHistoryLoading(false);
       }
@@ -43,12 +44,6 @@ const Resume = () => {
   }, [user]);
 
   const handleViewResume = () => {
-    console.log("Resume URL for View Resume:", {
-      resumeUrl,
-      currentResume: user?.currentResume,
-      legacyResume: user?.resume,
-    });
-
     if (resumeUrl) {
       window.open(resumeUrl, "_blank");
       return;
@@ -104,7 +99,7 @@ const Resume = () => {
       setResumeHistory(updatedHistory);
       toast.success("Resume version activated.");
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message || "Failed to activate resume version.");
+      toast.error(getErrorMessage(error, "Failed to activate resume version."));
     }
   };
 
@@ -127,11 +122,6 @@ const Resume = () => {
       const response = await uploadResume(formData);
       const updatedResumeUrl = response?.resumeUrl || "";
       const version = response?.version ?? user?.currentResume?.version ?? 1;
-
-      console.log("Resume upload response:", response, {
-        updatedResumeUrl,
-        version,
-      });
 
       if (!updatedResumeUrl) {
         throw new Error("Resume upload did not return a valid URL.");
@@ -177,11 +167,7 @@ const Resume = () => {
 
       toast.success("Resume uploaded successfully.");
     } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to upload resume."
-      );
+      toast.error(getErrorMessage(error, "Failed to upload resume."));
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import api from "../../api/axios";
+import { showErrorToast } from "../../utils/errorMessage";
 
 function Register() {
 
@@ -45,14 +46,7 @@ function Register() {
       }, 1500);
 
     } catch (error) {
-
-      console.log(error.response?.data);
-
-      toast.error(
-        error.response?.data?.message ||
-        error.response?.data?.errors?.[0] ||
-        "Registration failed"
-      );
+      showErrorToast(error, "Registration failed");
 
     } finally {
 

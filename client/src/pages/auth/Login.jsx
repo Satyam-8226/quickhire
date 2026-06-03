@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import api from "../../api/axios";
 
 import { useAuth } from "../../context/AuthContext";
+import { showErrorToast } from "../../utils/errorMessage";
 
 function Login() {
 
@@ -60,13 +61,7 @@ function Login() {
       }
 
     } catch (error) {
-
-      console.error(error);
-
-      toast.error(
-        error.response?.data?.message ||
-        "Login failed"
-      );
+      showErrorToast(error, "Login failed");
 
     } finally {
 
