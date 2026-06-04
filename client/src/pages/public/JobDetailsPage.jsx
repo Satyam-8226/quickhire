@@ -11,11 +11,11 @@ import {
 
 import { getSingleJob } from "../../api/jobApi";
 import { applyToJob } from "../../api/applicationApi";
-import Loader from "../../components/common/Loader";
+import { Skeleton } from "../../components/ui/Skeleton";
+import AppCard from "../../components/ui/AppCard";
 import ErrorState from "../../components/common/ErrorState";
 import { useAuth } from "../../context/AuthContext";
 import { getErrorMessage } from "../../utils/errorMessage";
-import AppCard from "../../components/ui/AppCard";
 import AppButton from "../../components/ui/AppButton";
 
 function JobDetailsPage() {
@@ -67,7 +67,18 @@ function JobDetailsPage() {
   };
 
   if (loading) {
-    return <Loader message="Loading job details..." />;
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 animate-pulse space-y-6">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-10 w-2/3 max-w-md" />
+        <AppCard hover={false} className="!p-8 space-y-4">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-4/6" />
+          <Skeleton className="h-11 w-36 rounded-xl mt-4" />
+        </AppCard>
+      </div>
+    );
   }
 
   if (error || !job) {

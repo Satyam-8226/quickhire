@@ -15,4 +15,13 @@
   body {
     @apply bg-surface text-slate-900 antialiased;
   }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand;
+  }
+
+  button:focus:not(:focus-visible),
+  a:focus:not(:focus-visible) {
+    outline: none;
+  }
 }

@@ -16,10 +16,13 @@ import { getMyJobs, getRecruiterStats } from "../../api/jobApi";
 import StatCard from "../../components/ui/StatCard";
 import SectionCard from "../../components/ui/SectionCard";
 import ErrorState from "../../components/common/ErrorState";
-import DashboardSkeleton from "../../components/skeletons/DashboardSkeleton";
+import EmptyState from "../../components/ui/EmptyState";
+import {
+  DashboardContentSkeleton,
+  DashboardHeroSkeleton,
+} from "../../components/skeletons/DashboardSkeleton";
 import { getErrorMessage } from "../../utils/errorMessage";
 import { AppButtonLink } from "../../components/ui/AppButton";
-import AppCard from "../../components/ui/AppCard";
 
 const RecruiterDashboard = () => {
   const [jobs, setJobs] = useState([]);
@@ -70,7 +73,23 @@ const RecruiterDashboard = () => {
   }, []);
 
   if (loading) {
-    return <DashboardSkeleton />;
+    return (
+      <div className="mx-auto max-w-7xl space-y-8">
+        <DashboardHeroSkeleton />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <div
+              key={item}
+              className="animate-pulse rounded-3xl border border-slate-200 bg-white p-5"
+            >
+              <div className="h-2.5 w-20 rounded bg-slate-100" />
+              <div className="mt-3 h-8 w-12 rounded bg-slate-100" />
+            </div>
+          ))}
+        </div>
+        <DashboardContentSkeleton />
+      </div>
+    );
   }
 
   if (error) {
@@ -79,78 +98,141 @@ const RecruiterDashboard = () => {
     );
   }
 
+  const reviewRate =
+    stats.totalApplicants > 0
+      ? Math.round(
+          ((stats.reviewed + stats.accepted + stats.rejected) /
+            stats.totalApplicants) *
+            100
+        )
+      : 0;
+
   return (
     <div className="mx-auto max-w-7xl">
-      <header className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-            Recruiter Dashboard
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm text-slate-500">
-            Monitor your jobs, track candidate interest, and manage applicant
-            progress in one place.
-          </p>
+      <header className="relative mb-8 overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-sm">
+        <div
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(243,240,255,0.9),transparent_55%),linear-gradient(to_bottom_right,#ffffff,#f8fafc)]"
+          aria-hidden
+        />
+        <div className="relative flex flex-col gap-6 p-8 md:flex-row md:items-center md:justify-between md:p-10">
+          <div className="min-w-0 max-w-2xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
+              Recruiter dashboard
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-[2rem] md:leading-tight">
+              Hiring overview
+            </h1>
+            <p className="mt-2.5 text-sm leading-relaxed text-slate-500">
+              Monitor job postings, review applicants, and manage your hiring
+              pipeline from one place.
+            </p>
+            <p className="mt-3 text-xs font-medium text-slate-400">
+              {stats.totalJobs} active job{stats.totalJobs !== 1 ? "s" : ""} ·{" "}
+              {stats.totalApplicants} applicant
+              {stats.totalApplicants !== 1 ? "s" : ""} · {reviewRate}% reviewed
+            </p>
+          </div>
+          <AppButtonLink
+            to="/recruiter/create-job"
+            size="md"
+            className="shrink-0 gap-2 shadow-sm"
+          >
+            <Plus className="h-4 w-4" aria-hidden />
+            Post New Job
+          </AppButtonLink>
         </div>
-        <AppButtonLink to="/recruiter/create-job" className="shrink-0 gap-2">
-          <Plus className="h-4 w-4" />
-          Post New Job
-        </AppButtonLink>
       </header>
 
-      <div className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard
-          title="Jobs Posted"
+          compact
+          title="Jobs posted"
           value={stats.totalJobs}
-          icon={<Briefcase className="h-5 w-5" />}
+          icon={<Briefcase />}
           description="Active listings"
         />
         <StatCard
+          compact
           title="Applicants"
           value={stats.totalApplicants}
-          icon={<Users className="h-5 w-5" />}
+          icon={<Users />}
           description="Total applications"
         />
         <StatCard
+          compact
           title="Pending"
           value={stats.pending}
-          icon={<Clock className="h-5 w-5" />}
+          icon={<Clock />}
           description="Awaiting review"
         />
         <StatCard
+          compact
           title="Reviewed"
           value={stats.reviewed}
-          icon={<Eye className="h-5 w-5" />}
+          icon={<Eye />}
           description="In progress"
         />
         <StatCard
+          compact
           title="Accepted"
           value={stats.accepted}
-          icon={<CheckCircle2 className="h-5 w-5" />}
+          icon={<CheckCircle2 />}
           description="Offers extended"
         />
         <StatCard
+          compact
           title="Rejected"
           value={stats.rejected}
-          icon={<XCircle className="h-5 w-5" />}
+          icon={<XCircle />}
           description="Closed applications"
         />
       </div>
 
       <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
         <SectionCard
-          title="Application Analytics"
-          subtitle="Analytics charts coming soon."
+          title="Applicant insights"
+          subtitle="Pipeline breakdown by application status."
           hover={false}
         >
-          <AppCard hover={false} className="border-dashed bg-slate-50/50 !p-8 text-center">
-            <p className="text-sm text-slate-500">
-              Visual insights for your hiring pipeline will appear here.
-            </p>
-          </AppCard>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              { label: "Pending", value: stats.pending, color: "bg-amber-500" },
+              { label: "Reviewed", value: stats.reviewed, color: "bg-brand" },
+              { label: "Accepted", value: stats.accepted, color: "bg-green-500" },
+              { label: "Rejected", value: stats.rejected, color: "bg-slate-400" },
+            ].map((item) => {
+              const pct =
+                stats.totalApplicants > 0
+                  ? Math.round((item.value / stats.totalApplicants) * 100)
+                  : 0;
+              return (
+                <div
+                  key={item.label}
+                  className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium text-slate-600">
+                      {item.label}
+                    </span>
+                    <span className="text-sm font-semibold tabular-nums text-slate-900">
+                      {item.value}
+                    </span>
+                  </div>
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/80">
+                    <div
+                      className={`h-full rounded-full ${item.color} transition-all`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-xs text-slate-400">{pct}% of total</p>
+                </div>
+              );
+            })}
+          </div>
         </SectionCard>
 
         <SectionCard
-          title="Latest Jobs"
+          title="Latest jobs"
           subtitle="Your most recent postings"
           actions={
             <Link
@@ -158,40 +240,35 @@ const RecruiterDashboard = () => {
               className="inline-flex items-center gap-1 text-sm font-semibold text-brand hover:text-brand-hover"
             >
               View all
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           }
         >
           {jobs.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-slate-200 p-8 text-center">
-              <p className="text-lg font-semibold text-slate-900 mb-2">
-                No job postings yet
-              </p>
-              <p className="mb-6 text-sm text-slate-500">
-                Create your first opening and start attracting top candidates.
-              </p>
-              <AppButtonLink to="/recruiter/create-job">Create Job</AppButtonLink>
-            </div>
+            <EmptyState
+              embedded
+              title="No job postings yet"
+              message="Create your first opening and start attracting top candidates."
+              buttonText="Create Job"
+              buttonLink="/recruiter/create-job"
+            />
           ) : (
-            <div className="space-y-4">
+            <div className="divide-y divide-slate-100">
               {jobs.slice(0, 5).map((job) => (
                 <div
                   key={job._id}
-                  className="rounded-2xl border border-slate-100 p-5 transition-colors hover:bg-brand-light/30"
+                  className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h3 className="font-semibold text-slate-900">{job.title}</h3>
-                      <p className="text-sm text-slate-500">{job.company}</p>
-                    </div>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-medium text-brand">
-                      <Users className="h-3.5 w-3.5" />
-                      {job.applicantCount || 0} applicants
-                    </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-slate-900">
+                      {job.title}
+                    </p>
+                    <p className="truncate text-sm text-slate-500">{job.company}</p>
                   </div>
-                  <p className="mt-3 line-clamp-2 text-sm text-slate-500">
-                    {job.description}
-                  </p>
+                  <span className="inline-flex w-fit items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-medium text-brand">
+                    <Users className="h-3.5 w-3.5" aria-hidden />
+                    {job.applicantCount || 0} applicants
+                  </span>
                 </div>
               ))}
             </div>

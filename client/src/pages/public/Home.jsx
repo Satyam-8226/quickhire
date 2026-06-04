@@ -30,7 +30,7 @@ function Home() {
     <div>
       <section className="relative overflow-hidden border-b border-slate-200 bg-white">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,#f3f0ff,transparent_50%)]" />
-        <div className="relative mx-auto max-w-7xl px-6 py-24 text-center md:py-32">
+        <div className="relative mx-auto max-w-7xl px-4 py-20 text-center sm:px-6 md:py-32">
           <p className="mb-4 inline-flex items-center rounded-full bg-brand-light px-4 py-1.5 text-sm font-medium text-brand">
             AI-powered hiring platform
           </p>
@@ -54,7 +54,7 @@ function Home() {
       </section>
 
       <section className="py-24">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="mb-16 text-center">
             <h2 className="text-4xl font-bold text-slate-900">
               Why choose QuickHire?

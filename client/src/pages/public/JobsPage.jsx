@@ -80,7 +80,7 @@ const JobsPage = () => {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <header className="mb-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
           Open roles
@@ -136,10 +136,10 @@ const JobsPage = () => {
             className="h-11 text-sm"
           >
             <option value="">All types</option>
-            <option value="Remote">Remote</option>
-            <option value="Hybrid">Hybrid</option>
-            <option value="Onsite">Onsite</option>
+            <option value="Full-Time">Full-Time</option>
+            <option value="Part-Time">Part-Time</option>
             <option value="Internship">Internship</option>
+            <option value="Remote">Remote</option>
           </AppSelect>
         </div>
       </AppCard>
@@ -167,8 +167,9 @@ const JobsPage = () => {
 
       {!error && !loading && jobs.length === 0 && (
         <EmptyState
-          title="No jobs found"
-          message="Try different keywords, locations, or job types to discover more openings."
+          title="No matching jobs found"
+          message="Try adjusting your search filters or check back later."
+          hideAction={!keyword && !location && !jobType}
         />
       )}
 

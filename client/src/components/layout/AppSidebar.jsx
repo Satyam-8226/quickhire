@@ -11,7 +11,10 @@ function AppSidebar({ title, links }) {
         <h2 className="mt-1 text-lg font-semibold text-slate-900">{title}</h2>
       </div>
 
-      <nav className="flex gap-2 overflow-x-auto px-4 py-4 lg:flex-col lg:overflow-visible lg:px-3 lg:py-6">
+      <nav
+        className="flex gap-2 overflow-x-auto px-4 py-4 lg:flex-col lg:overflow-visible lg:px-3 lg:py-6"
+        aria-label={`${title} navigation`}
+      >
         {links.map((link) => (
           <NavLink
             key={link.to}

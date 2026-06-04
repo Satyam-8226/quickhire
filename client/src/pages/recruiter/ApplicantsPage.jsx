@@ -139,7 +139,7 @@ const ApplicantsPage = () => {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="mx-auto max-w-7xl space-y-4">
         {Array.from({ length: 4 }).map((_, index) => (
           <ApplicantSkeleton key={index} />
         ))}
@@ -161,7 +161,8 @@ const ApplicantsPage = () => {
     return (
       <EmptyState
         title="No applicants yet"
-        message="No one has applied to this job posting yet"
+        message="Applicants will appear here once candidates start applying."
+        hideAction
       />
     );
   }
@@ -170,25 +171,25 @@ const ApplicantsPage = () => {
   const jobCompany = applications[0]?.job?.company || "";
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl">
       <div className="mb-8 space-y-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-500">
-              Applicant Review
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
+              Applicant review
             </p>
-            <h1 className="mt-2 text-3xl font-semibold text-gray-900">
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
               {jobTitle}
             </h1>
             {jobCompany && (
-              <p className="text-gray-600">{jobCompany}</p>
+              <p className="text-slate-500">{jobCompany}</p>
             )}
           </div>
           <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm">
             {applications.length} applicant{applications.length !== 1 ? "s" : ""}
           </div>
         </div>
-        <p className="max-w-2xl text-sm text-gray-600">
+        <p className="max-w-2xl text-sm text-slate-500">
           Review candidate profiles, open resumes, and update application status with a recruiter-grade workflow.
         </p>
       </div>
@@ -414,10 +415,12 @@ const ApplicantsPage = () => {
                 </h2>
               </div>
               <button
+                type="button"
                 onClick={closeDetails}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
+                aria-label="Close candidate details"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
-                <XCircle className="h-5 w-5" />
+                <XCircle className="h-5 w-5" aria-hidden />
               </button>
             </div>
 

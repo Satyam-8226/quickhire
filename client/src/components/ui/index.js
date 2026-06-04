@@ -17,3 +17,4 @@ export { default as StatCard } from "./StatCard";
 export { default as SectionCard } from "./SectionCard";
 export { default as PageHeader } from "./PageHeader";
 export { default as EmptyState } from "./EmptyState";
+export { Skeleton, default as SkeletonBlock } from "./Skeleton";

@@ -11,9 +11,14 @@ const EmptyState = ({
   icon: Icon = Inbox,
   embedded = false,
   className = "",
+  hideAction = false,
 }) => {
+  const showAction = !hideAction && buttonText && buttonLink;
+
   const content = (
     <div
+      role="status"
+      aria-live="polite"
       className={cn(
         "flex flex-col items-center text-center",
         embedded ? "py-10 px-4" : "py-14 px-6",
@@ -47,11 +52,12 @@ const EmptyState = ({
       >
         {message}
       </p>
-      {buttonText && buttonLink && (
+      {showAction && (
         <AppButtonLink
           to={buttonLink}
           size="md"
           className={cn(embedded ? "mt-6" : "mt-8")}
+          aria-label={buttonText}
         >
           {buttonText}
         </AppButtonLink>

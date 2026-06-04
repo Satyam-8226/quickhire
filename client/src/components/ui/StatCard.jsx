@@ -18,7 +18,7 @@ const StatCard = ({ title, value, icon, description, compact = false }) => {
           <p
             className={cn(
               "mt-1.5 font-semibold tracking-tight text-slate-900 tabular-nums",
-              compact ? "text-2xl" : "text-[1.75rem] leading-none"
+              compact ? "text-3xl" : "text-[2rem] leading-none"
             )}
           >
             {value}

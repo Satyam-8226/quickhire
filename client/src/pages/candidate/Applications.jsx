@@ -3,8 +3,8 @@ import toast from "react-hot-toast";
 
 import { getMyApplications } from "../../api/applicationApi";
 import { getErrorMessage } from "../../utils/errorMessage";
-import Loader from "../../components/common/Loader";
 import EmptyState from "../../components/common/EmptyState";
+import TableSkeleton from "../../components/skeletons/TableSkeleton";
 import ErrorState from "../../components/common/ErrorState";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
@@ -43,7 +43,15 @@ const Applications = () => {
   };
 
   if (loading) {
-    return <Loader message="Loading applications..." />;
+    return (
+      <div className="mx-auto max-w-6xl space-y-8">
+        <div className="animate-pulse space-y-2">
+          <div className="h-8 w-48 rounded-lg bg-slate-100" />
+          <div className="h-4 w-72 rounded bg-slate-100" />
+        </div>
+        <TableSkeleton rows={6} columns={5} />
+      </div>
+    );
   }
 
   if (error) {
@@ -65,7 +73,7 @@ const Applications = () => {
         />
         <EmptyState
           title="No applications yet"
-          message="You haven't applied to any jobs yet. Start exploring available opportunities."
+          message="Start applying to opportunities and track your progress here."
           buttonText="Browse Jobs"
           buttonLink="/jobs"
         />

@@ -5,7 +5,7 @@ import { Plus } from "lucide-react";
 
 import { getMyJobs, deleteJob } from "../../api/jobApi";
 import JobCard from "../../components/jobs/JobCard";
-import Loader from "../../components/common/Loader";
+import JobCardSkeleton from "../../components/skeletons/JobCardSkeleton";
 import EmptyState from "../../components/common/EmptyState";
 import ErrorState from "../../components/common/ErrorState";
 import PageHeader from "../../components/ui/PageHeader";
@@ -58,7 +58,19 @@ function RecruiterJobs() {
   };
 
   if (loading) {
-    return <Loader message="Loading your jobs..." />;
+    return (
+      <div className="mx-auto max-w-6xl space-y-8">
+        <div className="animate-pulse space-y-2">
+          <div className="h-8 w-56 rounded-lg bg-slate-100" />
+          <div className="h-4 w-72 rounded bg-slate-100" />
+        </div>
+        <div className="grid gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <JobCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (

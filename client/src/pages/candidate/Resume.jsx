@@ -15,6 +15,9 @@ import SectionCard from "../../components/ui/SectionCard";
 import StatusBadge from "../../components/ui/StatusBadge";
 import AppButton, { AppButtonLink, buttonClassName } from "../../components/ui/AppButton";
 import AppCard from "../../components/ui/AppCard";
+import EmptyState from "../../components/ui/EmptyState";
+import ResumeSkeleton from "../../components/skeletons/ResumeSkeleton";
+import { Skeleton } from "../../components/ui/Skeleton";
 
 const Resume = () => {
   const { user, setUser } = useAuth();
@@ -166,6 +169,10 @@ const Resume = () => {
     }
   };
 
+  if (historyLoading && !user) {
+    return <ResumeSkeleton />;
+  }
+
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
@@ -206,10 +213,12 @@ const Resume = () => {
               className="hidden"
               disabled={loading}
               onChange={handleFileUpload}
+              aria-label="Upload resume PDF"
             />
             <label
               htmlFor="resume-upload"
               className={`${buttonClassName()} cursor-pointer ${loading ? "pointer-events-none opacity-50" : ""}`}
+              aria-busy={loading}
             >
               {loading ? "Uploading..." : "Choose PDF"}
             </label>
@@ -271,14 +280,12 @@ const Resume = () => {
                 </div>
               </AppCard>
             ) : (
-              <div className="rounded-2xl border border-brand/20 bg-brand-light p-5">
-                <p className="text-sm font-semibold text-brand">
-                  No resume uploaded yet
-                </p>
-                <p className="mt-2 text-sm text-slate-600">
-                  Upload a PDF to get your profile ready for recruiters.
-                </p>
-              </div>
+              <EmptyState
+                embedded
+                title="No active resume"
+                message="Upload your resume to start applying for jobs."
+                hideAction
+              />
             )}
 
             <div className="space-y-3">
@@ -286,7 +293,11 @@ const Resume = () => {
                 Resume versions
               </p>
               {historyLoading && (
-                <p className="text-sm text-slate-500">Loading...</p>
+                <div className="space-y-3">
+                  {[1, 2].map((i) => (
+                    <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+                  ))}
+                </div>
               )}
               {resumeHistory.length === 0 && !historyLoading ? (
                 <p className="text-sm text-slate-500">
