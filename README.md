@@ -1,125 +1,178 @@
 # QuickHire AI
 
-QuickHire AI is a full-stack recruitment platform for candidates and recruiters. Candidates can browse jobs, upload resumes, apply, and track their applications, while recruiters can post jobs, review applicants, and update application status.
+QuickHire AI is a full-stack Applicant Tracking System (ATS) and job portal built for candidates and recruiters. Candidates can discover roles, manage resume versions, apply to jobs, and track applications. Recruiters can publish openings, review applicants, access resumes, and update hiring status — all in a modern purple SaaS interface.
 
-## What this project includes
+## Features
 
-- React 19 + Vite frontend with Tailwind CSS
-- Express + MongoDB backend with JWT authentication
-- Resume upload and version management using Cloudinary + Multer
-- Role-based routes for candidates and recruiters
-- Toast-based feedback and reusable dashboard UI components
+### Candidate Features
 
-## Tech stack
+- Secure authentication and role-based dashboard
+- Browse and search jobs with filters (keyword, location, job type)
+- Job details and one-click apply workflow
+- Application tracking with status badges
+- Resume upload (PDF), view, and download
+- Resume versioning with active version selection
 
-- Frontend: React, Vite, React Router, Axios, react-hot-toast, Tailwind CSS
-- Backend: Node.js, Express, Mongoose, JWT, Cloudinary, Multer
-- Database: MongoDB Atlas
+### Recruiter Features
 
-## Prerequisites
+- Recruiter dashboard with hiring pipeline stats
+- Create, edit, and delete job postings
+- View applicants per job with detailed profiles
+- Resume view and download for each applicant
+- Application status updates (pending, reviewed, accepted, rejected)
 
-Before you run the app locally, make sure you have:
+### Resume Versioning
 
-- Node.js 18+ and npm
-- A MongoDB Atlas connection string
-- A Cloudinary account for resume uploads
+- Upload multiple PDF resume versions via Cloudinary
+- Activate any previous version as the current resume
+- Active resume is used for new applications and recruiter visibility
 
-## Getting started
+### ATS Workflow
 
-1. Clone the repository and enter the project folder:
-   ```bash
-   git clone https://github.com/Satyam-8226/quickhire.git
-   cd quickhire-ai
-   ```
+1. Recruiter posts a job → job appears in the public browse list
+2. Candidate uploads resume and applies → application is created
+3. Recruiter reviews applicants, opens resume, updates status
+4. Candidate tracks progress from the applications dashboard
 
-2. Install dependencies in both apps:
-   ```bash
-   cd server && npm install
-   cd ../client && npm install
-   ```
+## Tech Stack
 
-3. Create a `.env` file in `server/` with the variables below:
-   ```env
-   PORT=5000
-   MONGO_URI=<your-mongodb-connection-string>
-   JWT_SECRET=<your-jwt-secret>
-   NODE_ENV=development
-   CLOUDINARY_CLOUD_NAME=<your-cloudinary-cloud-name>
-   CLOUDINARY_API_KEY=<your-cloudinary-api-key>
-   CLOUDINARY_API_SECRET=<your-cloudinary-api-secret>
-   ```
 
-   The backend validates `MONGO_URI` and `JWT_SECRET` at startup. Cloudinary credentials are required for resume upload and resume viewing.
+| Layer              | Technologies                                                                     |
+| ------------------ | -------------------------------------------------------------------------------- |
+| **Frontend**       | React 19, Vite, Tailwind CSS, React Router, Axios, react-hot-toast, Lucide icons |
+| **Backend**        | Node.js, Express, Mongoose, JWT, Helmet, rate limiting                           |
+| **Database**       | MongoDB Atlas                                                                    |
+| **Cloud Storage**  | Cloudinary (resume files via Multer)                                             |
+| **Authentication** | JWT (Bearer token in `localStorage`)                                             |
 
-4. Start the backend:
-   ```bash
-   cd server
-   npm run dev
-   ```
 
-5. Start the frontend in another terminal:
-   ```bash
-   cd client
-   npm run dev
-   ```
+## Architecture
 
-6. Open the app at:
-   ```text
-   http://localhost:5173
-   ```
+QuickHire AI follows a classic **SPA + REST API** architecture:
 
-## Main API routes
+- The **React client** handles routing, UI state, and calls the API through a shared Axios instance (`VITE_API_URL`).
+- The **Express server** exposes `/api/auth`, `/api/jobs`, and `/api/applications` routes with JWT middleware and role checks.
+- **MongoDB** stores users, jobs, and applications; resumes are stored in **Cloudinary** with URLs persisted on the user record.
 
-### Auth
-- `POST /api/auth/register` — register a user
-- `POST /api/auth/login` — sign in and receive a JWT
-- `GET /api/auth/me` — fetch the current authenticated user
-
-### Jobs
-- `GET /api/jobs` — list all jobs
-- `GET /api/jobs/:id` — get a job by ID
-- `GET /api/jobs/my-jobs` — recruiter-owned jobs
-- `GET /api/jobs/stats` — recruiter dashboard stats
-- `POST /api/jobs` — create a job (recruiter only)
-- `PUT /api/jobs/:id` — update a job (recruiter only)
-- `DELETE /api/jobs/:id` — delete a job (recruiter only)
-
-### Applications and resumes
-- `GET /api/applications/me` — candidate applications
-- `POST /api/applications/:jobId` — apply to a job
-- `PUT /api/applications/upload-resume` — upload a resume
-- `GET /api/applications/resumes` — list uploaded resume versions
-- `PATCH /api/applications/resumes/:versionId/activate` — activate a resume version
-- `GET /api/applications/job/:jobId` — recruiter view of applicants for a job
-- `PUT /api/applications/:applicationId` — update application status
-
-## Project structure
-
-```text
-quickhire-ai/
-├── client/               # Vite + React frontend
-│   └── src/
-│       ├── api/
-│       ├── components/
-│       ├── context/
-│       ├── pages/
-│       └── routes/
-└── server/               # Express + MongoDB backend
-    └── src/
-        ├── config/
-        ├── controllers/
-        ├── middlewares/
-        ├── models/
-        ├── routes/
-        └── validators/
+```
+[Browser] → [Vite React App] → [Express API] → [MongoDB Atlas]
+                                    ↓
+                              [Cloudinary]
 ```
 
-## Notes
+[ARCHITECTURE DIAGRAM HERE]
 
-- The backend uses JWTs stored in browser local storage and validates them on protected routes.
-- Resume uploads are stored via Cloudinary, so the app needs valid Cloudinary credentials to work end to end.
-- For frontend API calls, the client defaults to `http://localhost:5000/api` unless `VITE_API_URL` is set in `client/.env`.
+## Screenshots
+
+### Candidate Dashboard
+
+Candidate Dashboard
+
+### Browse Jobs
+
+[ADD SCREENSHOT]
+
+### Applications
+
+[ADD SCREENSHOT]
+
+### Resume Management
+
+[ADD SCREENSHOT]
+
+### Recruiter Dashboard
+
+[ADD SCREENSHOT]
+
+### Applicant Management
+
+[ADD SCREENSHOT]
+
+### Create Job
+
+[ADD SCREENSHOT]
+
+## Installation
+
+### Prerequisites
+
+- Node.js 18+
+- MongoDB Atlas cluster
+- Cloudinary account
+
+### Backend setup
+
+```bash
+cd server
+npm install
+cp .env.example .env
+# Fill in MONGO_URI, JWT_SECRET, Cloudinary keys, CLIENT_URL
+npm run dev
+```
+
+### Frontend setup
+
+```bash
+cd client
+npm install
+cp .env.example .env
+# Set VITE_API_URL=http://localhost:5000/api for local dev
+npm run dev
+```
+
+Open `http://localhost:5173` after both servers are running.
+
+### Environment variables
+
+**Server (`server/.env`)**
+
+
+| Variable       | Description                          |
+| -------------- | ------------------------------------ |
+| `PORT`         | API port (default `5000`)            |
+| `MONGO_URI`    | MongoDB Atlas connection string      |
+| `JWT_SECRET`   | Secret for signing tokens            |
+| `CLOUDINARY_`* | Cloud name, API key, API secret      |
+| `CLIENT_URL`   | Comma-separated allowed CORS origins |
+| `NODE_ENV`     | `development` or `production`        |
+
+
+**Client (`client/.env`)**
+
+
+| Variable       | Description                                               |
+| -------------- | --------------------------------------------------------- |
+| `VITE_API_URL` | Backend API base URL (e.g. `https://api.example.com/api`) |
+
+
+## Deployment
+
+### Vercel (frontend)
+
+1. Import the `client` folder as a Vite project.
+2. Set `VITE_API_URL` to your production API URL.
+3. Deploy; note the production URL for `CLIENT_URL` on the server.
+
+### Render (backend)
+
+1. Create a Web Service from the `server` folder.
+2. Add all environment variables from `server/.env.example`.
+3. Set `CLIENT_URL` to your Vercel URL(s).
+4. Use `npm start` (or `node src/server.js`) as the start command.
+
+### MongoDB Atlas
+
+1. Create a free cluster and database user.
+2. Whitelist `0.0.0.0/0` (or Render’s IP) for cloud hosting.
+3. Copy the connection string into `MONGO_URI`.
+
+## Future Roadmap
+
+**Phase 2: Personal Career CRM** — extended candidate profiles, interview notes, offer tracking, and networking tools beyond core ATS workflows.
 
 ## Author
 
-Built by Satyam Pandey.
+Built by **Satyam Pandey**.
+
+- GitHub: [Satyam-8226](https://github.com/Satyam-8226)
+- Project: [quickhire-ai](https://github.com/Satyam-8226/quickhire)
