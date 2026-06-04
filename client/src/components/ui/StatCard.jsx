@@ -7,7 +7,7 @@ const StatCard = ({ title, value, icon, description, compact = false }) => {
       hover
       className={cn(
         "flex h-full flex-col justify-between",
-        compact ? "min-h-[112px] !p-4" : "min-h-[128px] !p-5"
+        compact ? "min-h-28 p-4!" : "min-h-32 p-5!"
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -31,7 +31,7 @@ const StatCard = ({ title, value, icon, description, compact = false }) => {
               compact ? "h-9 w-9" : "h-10 w-10"
             )}
           >
-            <span className="[&>svg]:h-[18px] [&>svg]:w-[18px] [&>svg]:stroke-[1.75]">
+            <span className="[&>svg]:h-4.5 [&>svg]:w-4.5 [&>svg]:stroke-[1.75]">
               {icon}
             </span>
           </div>
