@@ -60,12 +60,17 @@ QuickHire AI follows a classic **SPA + REST API** architecture:
                               [Cloudinary]
 ```
 
+<<<<<<< HEAD
 ![ARCHITECTURE DIAGRAM](./screenshots/architecture.png)
+=======
+[ARCHITECTURE DIAGRAM HERE]
+>>>>>>> 3216c87ce3cf211319fe5e034ea2ce2aefe9e12b
 
 ## Screenshots
 
 ### Candidate Dashboard
 
+<<<<<<< HEAD
 ![Candidate Dashboard](./screenshots/candidate-dashboard.png)
 
 ### Browse Jobs
@@ -91,6 +96,33 @@ QuickHire AI follows a classic **SPA + REST API** architecture:
 ### Create Job
 
 ![Create Job](./screenshots/create-job.png)
+=======
+Candidate Dashboard
+
+### Browse Jobs
+
+[ADD SCREENSHOT]
+
+### Applications
+
+[ADD SCREENSHOT]
+
+### Resume Management
+
+[ADD SCREENSHOT]
+
+### Recruiter Dashboard
+
+[ADD SCREENSHOT]
+
+### Applicant Management
+
+[ADD SCREENSHOT]
+
+### Create Job
+
+[ADD SCREENSHOT]
+>>>>>>> 3216c87ce3cf211319fe5e034ea2ce2aefe9e12b
 
 ## Installation
 
