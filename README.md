@@ -2,6 +2,16 @@
 
 QuickHire AI is a full-stack Applicant Tracking System (ATS) and job portal built for candidates and recruiters. Candidates can discover roles, manage resume versions, apply to jobs, and track applications. Recruiters can publish openings, review applicants, access resumes, and update hiring status — all in a modern purple SaaS interface.
 
+## Highlights
+
+- Full-Stack ATS & Job Portal
+- Resume Versioning System
+- Role-Based Authentication (Candidate & Recruiter)
+- Applicant Tracking Workflow
+- Cloudinary Resume Storage
+- Responsive SaaS-Style UI
+- JWT Secure Authentication
+
 ## Features
 
 ### Candidate Features
@@ -54,11 +64,6 @@ QuickHire AI follows a classic **SPA + REST API** architecture:
 - The **Express server** exposes `/api/auth`, `/api/jobs`, and `/api/applications` routes with JWT middleware and role checks.
 - **MongoDB** stores users, jobs, and applications; resumes are stored in **Cloudinary** with URLs persisted on the user record.
 
-```
-[Browser] → [Vite React App] → [Express API] → [MongoDB Atlas]
-                                    ↓
-                              [Cloudinary]
-```
 
 ![ARCHITECTURE DIAGRAM](./screenshots/architecture.png)
 
@@ -168,7 +173,15 @@ Open `http://localhost:5173` after both servers are running.
 
 ## Future Roadmap
 
-**Phase 2: Personal Career CRM** — extended candidate profiles, interview notes, offer tracking, and networking tools beyond core ATS workflows.
+### Phase 2: Personal Career CRM
+
+- External application tracking (LinkedIn, Internshala, Wellfound, Naukri, company career pages)
+- Interview scheduling and notes
+- Assignment tracking and reminders
+- Resume-to-application mapping
+- Follow-up reminders and notifications
+- Resume performance analytics
+- Job search insights dashboard
 
 ## Author
 
