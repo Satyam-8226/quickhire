@@ -9,10 +9,6 @@ import ErrorResponse from '../utils/errorResponse.js';
 // @access  Private (Recruiter/Admin)
 export const createJob = asyncHandler(async (req, res) => {
   try {
-    console.log('===== CREATE JOB DEBUG =====');
-    console.log('Request Body:', JSON.stringify(req.body, null, 2));
-    console.log('User:', req.user ? { id: req.user._id, role: req.user.role } : 'No user');
-
     const {
       title,
       company,
@@ -23,18 +19,6 @@ export const createJob = asyncHandler(async (req, res) => {
       requirements,
       skills,
     } = req.body;
-
-    // Validation logging
-    console.log('Destructured values:', {
-      title,
-      company,
-      location,
-      jobType,
-      salary: { value: salary, type: typeof salary },
-      description,
-      requirements: { value: requirements, type: Array.isArray(requirements) ? 'array' : typeof requirements },
-      skills,
-    });
 
     // Validate required fields
     if (!title) throw new ErrorResponse('Title is required', 400);
@@ -54,17 +38,6 @@ export const createJob = asyncHandler(async (req, res) => {
     const reqArray = Array.isArray(requirements) ? requirements : (requirements ? [requirements] : []);
     if (reqArray.length === 0) throw new ErrorResponse('At least one requirement is required', 400);
 
-    console.log('Validation passed. Creating job with:', {
-      title,
-      company,
-      location,
-      jobType,
-      salary: normalizedSalary,
-      description,
-      requirements: reqArray,
-      createdBy: req.user._id,
-    });
-
     const job = await Job.create({
       title,
       company,
@@ -77,8 +50,6 @@ export const createJob = asyncHandler(async (req, res) => {
       createdBy: req.user._id,
     });
 
-    console.log('Job created successfully:', job._id);
-    console.log('===== END DEBUG =====');
 
     res.status(201).json({
       success: true,
@@ -86,14 +57,6 @@ export const createJob = asyncHandler(async (req, res) => {
       job,
     });
   } catch (error) {
-    console.error('===== CREATE JOB ERROR =====');
-    console.error('Error Type:', error.constructor.name);
-    console.error('Error Message:', error.message);
-    console.error('Error Stack:', error.stack);
-    if (error.errors) {
-      console.error('Validation Errors:', error.errors);
-    }
-    console.error('===== END ERROR =====');
     throw error;
   }
 });

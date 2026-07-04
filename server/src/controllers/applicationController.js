@@ -178,20 +178,10 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
 // @route   PUT /api/applications/upload-resume
 // @access  Private
 export const uploadResume = asyncHandler(async (req, res) => {
-  console.info('uploadResume payload', {
-    params: req.params,
-    body: req.body,
-    user: getUserSummary(req.user),
-  });
-
   if (!req.file) {
     throw new ErrorResponse('No file uploaded', 400);
   }
 
-  console.log('FILE', req.file);
-  console.log('MIMETYPE', req.file.mimetype);
-  console.log('SIZE', req.file.size);
-  console.log('PATH', req.file.path);
 
   if (req.file.mimetype !== 'application/pdf') {
     throw new ErrorResponse('Invalid file type. PDF required.', 400);
@@ -200,8 +190,6 @@ export const uploadResume = asyncHandler(async (req, res) => {
   let actualSize = null;
   try {
     actualSize = fs.statSync(req.file.path).size;
-    console.log('ACTUAL SIZE', actualSize);
-    console.log('SIZE MATCH', actualSize === req.file.size);
   } catch (err) {
     console.warn('Could not verify uploaded file size on disk', err.message || err);
   }
@@ -216,18 +204,6 @@ export const uploadResume = asyncHandler(async (req, res) => {
       use_filename: true,
       unique_filename: false,
       overwrite: true,
-    });
-    console.log('CLOUDINARY RESULT', {
-      secure_url: result.secure_url,
-      url: result.url,
-      public_id: result.public_id,
-      resource_type: result.resource_type,
-      type: result.type,
-      access_mode: result.access_mode,
-      format: result.format,
-      content_type: result.content_type,
-      bytes: result.bytes,
-      original_filename: result.original_filename,
     });
   } catch (err) {
     logDatabaseError('upload resume to cloudinary', err, req);
