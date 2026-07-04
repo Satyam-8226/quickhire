@@ -35,7 +35,7 @@ import Register from "../pages/auth/Register";
 // CANDIDATE PAGES
 // ===============================
 
-import CandidateDashboard from "../pages/candidate/CandidateDashBoard";
+import CandidateDashboard from "../pages/candidate/CandidateDashboard";
 import Applications from "../pages/candidate/Applications";
 import Resume from "../pages/candidate/Resume";
 
@@ -44,7 +44,7 @@ import Resume from "../pages/candidate/Resume";
 // RECRUITER PAGES
 // ===============================
 
-import RecruiterDashboard from "../pages/recruiter/RecruiterDashBoard";
+import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
 import RecruiterJobs from "../pages/recruiter/RecruiterJobs";
 import CreateJob from "../pages/recruiter/CreateJob";
 import EditJob from "../pages/recruiter/EditJob";
