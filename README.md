@@ -2,6 +2,12 @@
 
 QuickHire AI is a full-stack Applicant Tracking System (ATS) and job portal built for candidates and recruiters. Candidates can discover roles, manage resume versions, apply to jobs, and track applications. Recruiters can publish openings, review applicants, access resumes, and update hiring status — all in a modern purple SaaS interface.
 
+## Live Demo
+
+🌐 Live Application: http://16.171.232.137/
+
+> Hosted on AWS EC2 using Nginx and PM2.
+
 ## Highlights
 
 - Full-Stack ATS & Job Portal
@@ -54,6 +60,7 @@ QuickHire AI is a full-stack Applicant Tracking System (ATS) and job portal buil
 | **Database**       | MongoDB Atlas                                                                    |
 | **Cloud Storage**  | Cloudinary (resume files via Multer)                                             |
 | **Authentication** | JWT (Bearer token in `localStorage`)                                             |
+| **Deployment**     | AWS EC2, Nginx, PM2                                                              |
 
 
 ## Architecture
@@ -152,24 +159,12 @@ Open `http://localhost:5173` after both servers are running.
 
 ## Deployment
 
-### Vercel (frontend)
-
-1. Import the `client` folder as a Vite project.
-2. Set `VITE_API_URL` to your production API URL.
-3. Deploy; note the production URL for `CLIENT_URL` on the server.
-
-### Render (backend)
-
-1. Create a Web Service from the `server` folder.
-2. Add all environment variables from `server/.env.example`.
-3. Set `CLIENT_URL` to your Vercel URL(s).
-4. Use `npm start` (or `node src/server.js`) as the start command.
-
-### MongoDB Atlas
-
-1. Create a free cluster and database user.
-2. Whitelist `0.0.0.0/0` (or Render’s IP) for cloud hosting.
-3. Copy the connection string into `MONGO_URI`.
+- Frontend        :     Nginx
+- Backend         :     Node.js managed by PM2
+- Reverse Proxy   :     Nginx
+- Hosting         :     AWS EC2
+- Database        :     MongoDB Atlas
+- Resume Storage  :     Cloudinary
 
 ## Future Roadmap
 
