@@ -2,11 +2,6 @@
 
 QuickHire AI is a full-stack Applicant Tracking System (ATS) and job portal built for candidates and recruiters. Candidates can discover roles, manage resume versions, apply to jobs, and track applications. Recruiters can publish openings, review applicants, access resumes, and update hiring status — all in a modern purple SaaS interface.
 
-## Live Demo
-
-🌐 Live Application: http://16.171.232.137/
-
-> Hosted on AWS EC2 using Nginx and PM2.
 
 ## Live Demo
 
