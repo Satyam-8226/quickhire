@@ -8,6 +8,12 @@ QuickHire AI is a full-stack Applicant Tracking System (ATS) and job portal buil
 
 > Hosted on AWS EC2 using Nginx and PM2.
 
+## Live Demo
+
+🌐 Live Application: http://16.171.232.137/
+
+> Hosted on AWS EC2 using Nginx and PM2.
+
 ## Highlights
 
 - Full-Stack ATS & Job Portal
