@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
   ClipboardList,
+  ExternalLink,
   FileText,
 } from "lucide-react";
 import AppSidebar from "../components/layout/AppSidebar";
@@ -17,6 +18,11 @@ const links = [
     to: "/candidate/applications",
     label: "Applications",
     icon: <ClipboardList className="h-4 w-4" />,
+  },
+  {
+    to: "/candidate/external-applications",
+    label: "External Applications",
+    icon: <ExternalLink className="h-4 w-4" />,
   },
   {
     to: "/candidate/resume",

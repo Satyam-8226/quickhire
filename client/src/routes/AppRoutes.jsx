@@ -37,6 +37,7 @@ import Register from "../pages/auth/Register";
 
 import CandidateDashboard from "../pages/candidate/CandidateDashboard";
 import Applications from "../pages/candidate/Applications";
+import ExternalApplications from "../pages/candidate/ExternalApplications";
 import Resume from "../pages/candidate/Resume";
 
 
@@ -119,6 +120,11 @@ function AppRoutes() {
             <Route
               path="applications"
               element={<Applications />}
+            />
+
+            <Route
+              path="external-applications"
+              element={<ExternalApplications />}
             />
 
             <Route

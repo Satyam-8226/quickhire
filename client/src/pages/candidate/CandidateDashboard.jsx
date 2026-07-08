@@ -7,11 +7,18 @@ import {
   Sparkles,
   Briefcase,
   ArrowRight,
+  CalendarDays,
+  BellRing,
+  AlertCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../../context/AuthContext";
-import { getMyApplications } from "../../api/applicationApi";
+import {
+  getInterviewRounds,
+  getMyApplications,
+  getMyExternalApplications,
+} from "../../api/applicationApi";
 import { getErrorMessage } from "../../utils/errorMessage";
 import ErrorState from "../../components/common/ErrorState";
 import EmptyState from "../../components/ui/EmptyState";
@@ -32,9 +39,28 @@ const getInitials = (name) => {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 };
 
+const getDayLabel = (dateValue) => {
+  if (!dateValue) return "Soon";
+
+  const targetDate = new Date(dateValue);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  targetDate.setHours(0, 0, 0, 0);
+
+  const diffDays = Math.round((targetDate - today) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Tomorrow";
+  if (diffDays <= 3) return `In ${diffDays} Days`;
+  if (diffDays < 0) return "Overdue";
+  return `In ${diffDays} Days`;
+};
+
 const CandidateDashboard = () => {
   const { user } = useAuth();
   const [applications, setApplications] = useState([]);
+  const [externalApplications, setExternalApplications] = useState([]);
+  const [interviewsByApplication, setInterviewsByApplication] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -44,15 +70,37 @@ const CandidateDashboard = () => {
   const resumeUpdatedAt = user?.currentResume?.uploadedAt;
 
   useEffect(() => {
-    fetchApplications();
+    fetchDashboardData();
   }, []);
 
-  const fetchApplications = async () => {
+  const fetchDashboardData = async () => {
     try {
       setLoading(true);
       setError("");
-      const data = await getMyApplications();
-      setApplications(data?.applications || []);
+
+      const [quickHireData, externalData] = await Promise.all([
+        getMyApplications(),
+        getMyExternalApplications(),
+      ]);
+
+      const quickHireApplications = quickHireData?.applications || [];
+      const externalApps = externalData?.externalApplications || [];
+      const interviewLookups = {};
+
+      await Promise.all(
+        externalApps.map(async (application) => {
+          try {
+            const interviewData = await getInterviewRounds(application._id);
+            interviewLookups[application._id] = interviewData?.interviewRounds || [];
+          } catch {
+            interviewLookups[application._id] = [];
+          }
+        })
+      );
+
+      setApplications(quickHireApplications);
+      setExternalApplications(externalApps);
+      setInterviewsByApplication(interviewLookups);
     } catch (err) {
       const message = getErrorMessage(err, "Failed to load your dashboard data");
       setError(message);
@@ -75,10 +123,125 @@ const CandidateDashboard = () => {
     [applications]
   );
 
-  const recentApplications = useMemo(
-    () => applications.slice(0, 5),
-    [applications]
-  );
+  const recentApplications = useMemo(() => applications.slice(0, 5), [applications]);
+
+  const stats = useMemo(() => {
+    const activeExternalApplications = externalApplications.filter((app) => {
+      const status = (app.status || "").toLowerCase();
+      return !["rejected", "withdrawn", "ghosted", "offer"].includes(status);
+    });
+
+    const interviewScheduledCount = externalApplications.filter((app) => {
+      const status = (app.status || "").toLowerCase();
+      return ["interview scheduled", "interviewing", "hr round"].includes(status);
+    }).length + applications.filter((app) => (app.status || "").toLowerCase() === "interview").length;
+
+    const offers = externalApplications.filter((app) => (app.status || "").toLowerCase() === "offer").length + applications.filter((app) => (app.status || "").toLowerCase() === "accepted").length;
+    const rejections = externalApplications.filter((app) => ["rejected", "ghosted"].includes((app.status || "").toLowerCase())).length + applications.filter((app) => (app.status || "").toLowerCase() === "rejected").length;
+
+    return {
+      total: applications.length + externalApplications.length,
+      active: activeExternalApplications.length + applications.filter((app) => ["pending", "reviewed", "applied", "oa scheduled", "oa completed", "interview scheduled", "interviewing", "hr round"].includes((app.status || "").toLowerCase())).length,
+      interviews: interviewScheduledCount,
+      offers,
+      rejections,
+    };
+  }, [applications, externalApplications]);
+
+  const upcomingItems = useMemo(() => {
+    const items = [];
+
+    Object.entries(interviewsByApplication).forEach(([applicationId, rounds]) => {
+      const application = externalApplications.find((entry) => entry._id === applicationId);
+      if (!application || ["Rejected", "Withdrawn", "Ghosted"].includes(application.status)) {
+        return;
+      }
+
+      rounds.forEach((round) => {
+        if (!round?.scheduledAt) return;
+        const scheduledAt = new Date(round.scheduledAt);
+        if (Number.isNaN(scheduledAt.getTime())) return;
+
+        items.push({
+          id: round._id,
+          type: "interview",
+          title: `${round.roundName || "Interview"} for ${application.companyName}`,
+          description: `${round.roundType || "Round"} • ${round.interviewer || "TBD"}`,
+          date: scheduledAt,
+          badge: getDayLabel(scheduledAt),
+          status: round.status,
+        });
+      });
+    });
+
+    externalApplications.forEach((application) => {
+      const status = application.status;
+      if (["Rejected", "Withdrawn", "Ghosted"].includes(status)) return;
+
+      if (application.followUpDate) {
+        const followUpDate = new Date(application.followUpDate);
+        if (!Number.isNaN(followUpDate.getTime())) {
+          items.push({
+            id: `${application._id}-followup`,
+            type: "follow-up",
+            title: `Follow up with ${application.companyName}`,
+            description: application.role || "Keep the process moving",
+            date: followUpDate,
+            badge: getDayLabel(followUpDate),
+            status,
+          });
+        }
+      }
+
+      if (status === "OA Scheduled") {
+        const deadline = application.followUpDate ? new Date(application.followUpDate) : new Date(application.appliedDate);
+        deadline.setDate(deadline.getDate() + 3);
+        items.push({
+          id: `${application._id}-assessment`,
+          type: "assessment",
+          title: `Complete OA for ${application.companyName}`,
+          description: application.role || "Assessment deadline",
+          date: deadline,
+          badge: getDayLabel(deadline),
+          status,
+        });
+      }
+
+      if (status === "Offer") {
+        const deadline = application.followUpDate ? new Date(application.followUpDate) : new Date();
+        deadline.setDate(deadline.getDate() + 2);
+        items.push({
+          id: `${application._id}-offer`,
+          type: "offer",
+          title: `Respond to ${application.companyName}`,
+          description: "Offer needs your attention",
+          date: deadline,
+          badge: getDayLabel(deadline),
+          status,
+        });
+      }
+
+      const updatedAt = application.updatedAt || application.createdAt;
+      if (updatedAt) {
+        const lastUpdated = new Date(updatedAt);
+        const staleDate = new Date(lastUpdated);
+        staleDate.setDate(staleDate.getDate() + 14);
+        if (new Date() >= staleDate) {
+          items.push({
+            id: `${application._id}-idle`,
+            type: "idle",
+            title: `No update for ${application.companyName}`,
+            description: "Follow up to keep momentum",
+            date: staleDate,
+            badge: getDayLabel(staleDate),
+            status,
+          });
+        }
+      }
+    });
+
+    return items.sort((a, b) => a.date - b.date);
+  }, [externalApplications, interviewsByApplication]);
 
   if (loading) {
     return (
@@ -94,7 +257,7 @@ const CandidateDashboard = () => {
       <ErrorState
         title="Dashboard error"
         message={error}
-        onRetry={fetchApplications}
+        onRetry={fetchDashboardData}
       />
     );
   }
@@ -118,9 +281,7 @@ const CandidateDashboard = () => {
               Track applications, manage resumes, and discover opportunities.
             </p>
             <p className="mt-3 text-xs font-medium text-slate-400">
-              {applications.length} application{applications.length !== 1 ? "s" : ""}{" "}
-              · {hasResume ? "Resume ready" : "Resume needed"} ·{" "}
-              {applicationCounts.pending} pending review
+              {stats.total} total applications · {hasResume ? "Resume ready" : "Resume needed"} · {stats.active} active
             </p>
           </div>
           <AppButtonLink to="/jobs" size="md" className="shrink-0 shadow-sm">
@@ -131,36 +292,76 @@ const CandidateDashboard = () => {
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <StatCard
               compact
               title="Total applications"
-              value={applications.length}
+              value={stats.total}
               icon={<ClipboardList />}
-              description="Sent so far"
+              description="Across QuickHire and external sources"
             />
             <StatCard
               compact
-              title="Pending review"
-              value={applicationCounts.pending}
+              title="Active applications"
+              value={stats.active}
               icon={<FileText />}
-              description="Awaiting feedback"
+              description="Still in motion"
             />
             <StatCard
               compact
-              title="Accepted offers"
-              value={applicationCounts.accepted}
+              title="Interviews scheduled"
+              value={stats.interviews}
+              icon={<CalendarDays />}
+              description="Upcoming and active rounds"
+            />
+            <StatCard
+              compact
+              title="Offers"
+              value={stats.offers}
               icon={<CheckCircle2 />}
-              description="Offers received"
+              description="Needs your attention"
             />
             <StatCard
               compact
-              title="Resume status"
-              value={hasResume ? "Uploaded" : "Missing"}
-              icon={<Sparkles />}
-              description={hasResume ? "Ready to apply" : "Upload required"}
+              title="Rejections"
+              value={stats.rejections}
+              icon={<AlertCircle />}
+              description="Closed out"
             />
           </div>
+
+          <SectionCard
+            title="Upcoming"
+            subtitle="Priority reminders and what needs attention next."
+          >
+            {upcomingItems.length === 0 ? (
+              <EmptyState
+                embedded
+                title="No upcoming items"
+                message="You’re all caught up for now."
+                hideAction
+              />
+            ) : (
+              <div className="space-y-3">
+                {upcomingItems.map((item) => (
+                  <div key={item.id} className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                        <span className="rounded-full bg-brand-light px-2.5 py-1 text-[11px] font-medium text-brand">
+                          {item.badge}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm text-slate-500">{item.description}</p>
+                    </div>
+                    <div className="text-sm text-slate-500">
+                      {item.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </SectionCard>
 
           <SectionCard
             title="Recent Applications"

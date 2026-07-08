@@ -25,6 +25,38 @@ const statusMap = {
     label: "Rejected",
     styles: "bg-red-100 text-red-700",
   },
+  "oa scheduled": {
+    label: "OA Scheduled",
+    styles: "bg-amber-100 text-amber-700",
+  },
+  "oa completed": {
+    label: "OA Completed",
+    styles: "bg-sky-100 text-sky-700",
+  },
+  "interview scheduled": {
+    label: "Interview Scheduled",
+    styles: "bg-violet-100 text-violet-700",
+  },
+  interviewing: {
+    label: "Interviewing",
+    styles: "bg-indigo-100 text-indigo-700",
+  },
+  "hr round": {
+    label: "HR Round",
+    styles: "bg-fuchsia-100 text-fuchsia-700",
+  },
+  offer: {
+    label: "Offer",
+    styles: "bg-green-100 text-green-700",
+  },
+  withdrawn: {
+    label: "Withdrawn",
+    styles: "bg-slate-100 text-slate-700",
+  },
+  ghosted: {
+    label: "Ghosted",
+    styles: "bg-red-100 text-red-700",
+  },
 };
 
 const StatusBadge = ({ status, className = "" }) => {
