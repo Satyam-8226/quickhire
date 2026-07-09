@@ -145,6 +145,41 @@ const externalApplicationSchema = new mongoose.Schema(
       },
     ],
 
+    timeline: [
+      {
+        type: {
+          type: String,
+          enum: [
+            'Application',
+            'Status Change',
+            'Interview',
+            'Follow-up',
+            'Offer',
+            'Rejection',
+            'Archive',
+            'Favorite',
+            'Attachment',
+            'Note',
+          ],
+          default: 'Application',
+        },
+        title: {
+          type: String,
+          trim: true,
+          default: '',
+        },
+        description: {
+          type: String,
+          trim: true,
+          default: '',
+        },
+        occurredAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
     companyNotes: {
       interviewExperience: {
         type: String,

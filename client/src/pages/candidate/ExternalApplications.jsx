@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Archive, CalendarDays, ChevronRight, ExternalLink, Pencil, Plus, Star, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, CalendarDays, ChevronRight, ExternalLink, Pencil, Plus, Star, Trash2 } from "lucide-react";
 
 import {
   createExternalApplication,
@@ -98,6 +98,12 @@ const ExternalApplications = () => {
   const [filterPlatform, setFilterPlatform] = useState("");
   const [filterFavorite, setFilterFavorite] = useState("");
   const [filterArchived, setFilterArchived] = useState("false");
+  const [filterPriority, setFilterPriority] = useState("");
+  const [appliedFrom, setAppliedFrom] = useState("");
+  const [appliedTo, setAppliedTo] = useState("");
+  const [followUpFrom, setFollowUpFrom] = useState("");
+  const [followUpTo, setFollowUpTo] = useState("");
+  const [quickFilter, setQuickFilter] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [interviewsByApplication, setInterviewsByApplication] = useState({});
@@ -116,11 +122,7 @@ const ExternalApplications = () => {
   const [editingInterviewId, setEditingInterviewId] = useState(null);
   const [interviewSubmitting, setInterviewSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchApplications();
-  }, [searchText, filterStatus, filterPlatform, filterFavorite, filterArchived]);
-
-  const fetchApplications = async () => {
+  const fetchApplications = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -130,6 +132,15 @@ const ExternalApplications = () => {
         platform: filterPlatform || undefined,
         favorite: filterFavorite || undefined,
         archived: filterArchived || undefined,
+        priority: filterPriority || undefined,
+        appliedFrom: appliedFrom || undefined,
+        appliedTo: appliedTo || undefined,
+        followUpFrom: followUpFrom || undefined,
+        followUpTo: followUpTo || undefined,
+        overdue: quickFilter === "overdue" ? "true" : undefined,
+        today: quickFilter === "today" ? "true" : undefined,
+        tomorrow: quickFilter === "tomorrow" ? "true" : undefined,
+        thisWeek: quickFilter === "thisWeek" ? "true" : undefined,
       };
       const data = await getMyExternalApplications(query);
       setApplications(data?.externalApplications || []);
@@ -140,7 +151,23 @@ const ExternalApplications = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    searchText,
+    filterStatus,
+    filterPlatform,
+    filterFavorite,
+    filterArchived,
+    filterPriority,
+    appliedFrom,
+    appliedTo,
+    followUpFrom,
+    followUpTo,
+    quickFilter,
+  ]);
+
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications]);
 
   const resetForm = () => {
     setFormData(initialFormState);
@@ -249,7 +276,7 @@ const ExternalApplications = () => {
   };
 
   const handleDelete = async (applicationId) => {
-    const confirmed = window.confirm("Delete this external application?");
+    const confirmed = window.confirm("Delete this external application? This cannot be undone.");
     if (!confirmed) return;
 
     try {
@@ -265,6 +292,80 @@ const ExternalApplications = () => {
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleToggleFavorite = async (application) => {
+    try {
+      const nextFavorite = !application.favorite;
+      const data = await updateExternalApplication(application._id, {
+        favorite: nextFavorite,
+      });
+      setApplications((current) =>
+        current.map((item) =>
+          item._id === application._id ? data.externalApplication : item
+        )
+      );
+      toast.success(nextFavorite ? "Added to favorites" : "Removed from favorites");
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Unable to update favorite"));
+    }
+  };
+
+  const handleToggleArchive = async (application) => {
+    const nextArchived = !application.archived;
+    const confirmed = window.confirm(
+      nextArchived ? "Archive this application?" : "Restore this application?"
+    );
+    if (!confirmed) return;
+
+    try {
+      const data = await updateExternalApplication(application._id, {
+        archived: nextArchived,
+      });
+
+      if (filterArchived === "false" && nextArchived) {
+        setApplications((current) =>
+          current.filter((item) => item._id !== application._id)
+        );
+      } else if (filterArchived === "true" && !nextArchived) {
+        setApplications((current) =>
+          current.filter((item) => item._id !== application._id)
+        );
+      } else {
+        setApplications((current) =>
+          current.map((item) =>
+            item._id === application._id ? data.externalApplication : item
+          )
+        );
+      }
+
+      toast.success(nextArchived ? "Application archived" : "Application restored");
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Unable to update archive status"));
+    }
+  };
+
+  const resetFilters = () => {
+    setSearchText("");
+    setFilterStatus("");
+    setFilterPlatform("");
+    setFilterFavorite("");
+    setFilterArchived("false");
+    setFilterPriority("");
+    setAppliedFrom("");
+    setAppliedTo("");
+    setFollowUpFrom("");
+    setFollowUpTo("");
+    setQuickFilter("");
+  };
+
+  const dashboardStats = {
+    total: applications.length,
+    favorites: applications.filter((application) => application.favorite).length,
+    interviews: applications.filter((application) =>
+      ["Interview Scheduled", "Interviewing", "HR Round"].includes(application.status)
+    ).length,
+    archived: applications.filter((application) => application.archived).length,
   };
 
   const fetchInterviews = async (applicationId) => {
@@ -405,6 +506,22 @@ const ExternalApplications = () => {
         }
       />
 
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          ["Visible applications", dashboardStats.total],
+          ["Favorites", dashboardStats.favorites],
+          ["In interview", dashboardStats.interviews],
+          ["Archived in view", dashboardStats.archived],
+        ].map(([label, value]) => (
+          <AppCard key={label} hover={false} className="p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+              {label}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
+          </AppCard>
+        ))}
+      </div>
+
       <AppCard hover={false} className="space-y-4">
         <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr] xl:grid-cols-[2fr_1fr]">
           <AppInput
@@ -412,7 +529,7 @@ const ExternalApplications = () => {
             name="search"
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
-            placeholder="Search by company, role, platform, notes..."
+            placeholder="Search company, role, platform, notes, salary, recruiter..."
           />
           <div className="grid gap-4 sm:grid-cols-2">
             <AppSelect
@@ -457,6 +574,58 @@ const ExternalApplications = () => {
               <option value="true">Archived</option>
               <option value="">All</option>
             </AppSelect>
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <AppSelect
+            label="Priority"
+            value={filterPriority}
+            onChange={(event) => setFilterPriority(event.target.value)}
+          >
+            <option value="">All priorities</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </AppSelect>
+          <AppSelect
+            label="Quick date"
+            value={quickFilter}
+            onChange={(event) => setQuickFilter(event.target.value)}
+          >
+            <option value="">No quick filter</option>
+            <option value="today">Applied today</option>
+            <option value="tomorrow">Applied tomorrow</option>
+            <option value="thisWeek">Applied this week</option>
+            <option value="overdue">Overdue follow-ups</option>
+          </AppSelect>
+          <AppInput
+            label="Applied from"
+            type="date"
+            value={appliedFrom}
+            onChange={(event) => setAppliedFrom(event.target.value)}
+          />
+          <AppInput
+            label="Applied to"
+            type="date"
+            value={appliedTo}
+            onChange={(event) => setAppliedTo(event.target.value)}
+          />
+          <AppInput
+            label="Follow-up from"
+            type="date"
+            value={followUpFrom}
+            onChange={(event) => setFollowUpFrom(event.target.value)}
+          />
+          <AppInput
+            label="Follow-up to"
+            type="date"
+            value={followUpTo}
+            onChange={(event) => setFollowUpTo(event.target.value)}
+          />
+          <div className="flex items-end lg:col-span-2">
+            <AppButton type="button" variant="secondary" onClick={resetFilters} fullWidth>
+              Reset filters
+            </AppButton>
           </div>
         </div>
       </AppCard>
@@ -673,8 +842,8 @@ const ExternalApplications = () => {
 
       {applications.length === 0 ? (
         <EmptyState
-          title="No external applications yet"
-          message="Capture the roles you applied to through LinkedIn, referrals, or company career pages."
+          title="No applications match this view"
+          message="Adjust your search or filters, or add a new external application."
           hideAction
         />
       ) : (
@@ -724,6 +893,30 @@ const ExternalApplications = () => {
                           <ExternalLink className="h-4 w-4" />
                         </a>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleFavorite(application)}
+                        className={`inline-flex items-center rounded-full border p-2 transition ${
+                          application.favorite
+                            ? "border-amber-200 bg-amber-50 text-amber-600"
+                            : "border-slate-200 text-slate-500 hover:border-brand hover:text-brand"
+                        }`}
+                        aria-label={application.favorite ? "Remove favorite" : "Favorite application"}
+                      >
+                        <Star className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleArchive(application)}
+                        className="inline-flex items-center rounded-full border border-slate-200 p-2 text-slate-500 transition hover:border-brand hover:text-brand"
+                        aria-label={application.archived ? "Restore application" : "Archive application"}
+                      >
+                        {application.archived ? (
+                          <ArchiveRestore className="h-4 w-4" />
+                        ) : (
+                          <Archive className="h-4 w-4" />
+                        )}
+                      </button>
                       <button
                         type="button"
                         onClick={() => handleOpenInterviews(application)}

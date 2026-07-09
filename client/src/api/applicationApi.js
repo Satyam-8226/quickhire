@@ -94,6 +94,15 @@ export const deleteExternalApplication = async (id) => {
   return response.data;
 };
 
+export const uploadExternalApplicationAttachment = async (id, formData) => {
+  const response = await api.post(`/external-applications/${id}/attachments`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
 export const getInterviewRounds = async (externalApplicationId) => {
   const response = await api.get(`/external-applications/${externalApplicationId}/interviews`);
   return response.data;

@@ -1,14 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ClipboardList,
   FileText,
   CheckCircle2,
-  Sparkles,
   Briefcase,
   ArrowRight,
   CalendarDays,
-  BellRing,
   AlertCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -25,6 +23,7 @@ import EmptyState from "../../components/ui/EmptyState";
 import SectionCard from "../../components/ui/SectionCard";
 import StatCard from "../../components/ui/StatCard";
 import StatusBadge from "../../components/ui/StatusBadge";
+import ActivityFeed from "../../components/ui/ActivityFeed";
 import { AppButtonLink } from "../../components/ui/AppButton";
 import { buttonClassName } from "../../components/ui/AppButton";
 import {
@@ -69,11 +68,7 @@ const CandidateDashboard = () => {
   const resumeVersion = user?.currentResume?.version ?? 1;
   const resumeUpdatedAt = user?.currentResume?.uploadedAt;
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -108,20 +103,11 @@ const CandidateDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const applicationCounts = useMemo(
-    () =>
-      applications.reduce(
-        (counts, application) => {
-          const key = application.status || "pending";
-          counts[key] = (counts[key] || 0) + 1;
-          return counts;
-        },
-        { pending: 0, reviewed: 0, accepted: 0, rejected: 0 }
-      ),
-    [applications]
-  );
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const recentApplications = useMemo(() => applications.slice(0, 5), [applications]);
 
@@ -242,6 +228,72 @@ const CandidateDashboard = () => {
 
     return items.sort((a, b) => a.date - b.date);
   }, [externalApplications, interviewsByApplication]);
+
+  const recentActivity = useMemo(() => {
+    const items = [];
+
+    applications.forEach((application) => {
+      const createdAt = application.createdAt ? new Date(application.createdAt) : null;
+      if (!createdAt || Number.isNaN(createdAt.getTime())) return;
+
+      items.push({
+        id: `quickhire-${application._id}`,
+        title: `Applied to ${application.job?.company || "a company"}`,
+        description: application.job?.title || "QuickHire application",
+        timestamp: createdAt.toLocaleDateString(),
+        sortDate: createdAt,
+        badge: application.status || "Applied",
+      });
+    });
+
+    externalApplications.forEach((application) => {
+      const updatedAt = application.updatedAt ? new Date(application.updatedAt) : null;
+      const createdAt = application.createdAt ? new Date(application.createdAt) : null;
+
+      if (createdAt && !Number.isNaN(createdAt.getTime())) {
+        items.push({
+          id: `external-created-${application._id}`,
+          title: `Added ${application.companyName}`,
+          description: `${application.role} via ${application.platform}`,
+          timestamp: createdAt.toLocaleDateString(),
+          sortDate: createdAt,
+          badge: application.status,
+        });
+      }
+
+      if (updatedAt && !Number.isNaN(updatedAt.getTime())) {
+        items.push({
+          id: `external-updated-${application._id}`,
+          title: `${application.companyName} status is ${application.status}`,
+          description: application.favorite ? "Favorited application" : "Application updated",
+          timestamp: updatedAt.toLocaleDateString(),
+          sortDate: updatedAt,
+          badge: application.priority,
+        });
+      }
+    });
+
+    Object.entries(interviewsByApplication).forEach(([applicationId, rounds]) => {
+      const application = externalApplications.find((entry) => entry._id === applicationId);
+      rounds.forEach((round) => {
+        const scheduledAt = round.scheduledAt ? new Date(round.scheduledAt) : null;
+        if (!scheduledAt || Number.isNaN(scheduledAt.getTime())) return;
+
+        items.push({
+          id: `interview-${round._id}`,
+          title: `${round.status} interview at ${application?.companyName || "company"}`,
+          description: `${round.roundName || "Interview"} - ${round.roundType || "Round"}`,
+          timestamp: scheduledAt.toLocaleDateString(),
+          sortDate: scheduledAt,
+          badge: round.status,
+        });
+      });
+    });
+
+    return items
+      .sort((a, b) => b.sortDate - a.sortDate)
+      .slice(0, 8);
+  }, [applications, externalApplications, interviewsByApplication]);
 
   if (loading) {
     return (
@@ -414,6 +466,13 @@ const CandidateDashboard = () => {
                 ))}
               </div>
             )}
+          </SectionCard>
+
+          <SectionCard
+            title="Activity Feed"
+            subtitle="Recent application, interview, and status activity."
+          >
+            <ActivityFeed items={recentActivity} />
           </SectionCard>
         </div>
 

@@ -1,16 +1,8 @@
 import asyncHandler from '../middlewares/asyncHandler.js';
 import ErrorResponse from '../utils/errorResponse.js';
 import ExternalApplication from '../models/externalApplicationModel.js';
-
-const getUserSummary = (user) => {
-  if (!user) return null;
-
-  return {
-    id: user._id,
-    email: user.email,
-    role: user.role,
-  };
-};
+import cloudinary from '../config/cloudinary.js';
+import fs from 'fs';
 
 const normalizeAppliedDate = (value) => {
   if (!value) {
@@ -63,6 +55,8 @@ const buildExternalApplicationQuery = (query) => {
     filters.archived = true;
   } else if (query.archived === 'false') {
     filters.archived = false;
+  } else if (query.archived === 'all' || query.archived === '') {
+    // allow explicit all archive filter
   } else {
     filters.archived = false;
   }
@@ -75,8 +69,8 @@ const buildExternalApplicationQuery = (query) => {
     filters.platform = query.platform;
   }
 
-  if (query.priority === 'High') {
-    filters.priority = 'High';
+  if (query.priority && ['Low', 'Medium', 'High'].includes(query.priority)) {
+    filters.priority = query.priority;
   }
 
   if (query.today === 'true') {
@@ -109,6 +103,50 @@ const buildExternalApplicationQuery = (query) => {
     filters.followUpDate = { $lt: now };
   }
 
+  if (query.appliedFrom || query.appliedTo) {
+    filters.appliedDate = {
+      ...(filters.appliedDate || {}),
+    };
+
+    if (query.appliedFrom) {
+      const from = new Date(query.appliedFrom);
+      if (!Number.isNaN(from.getTime())) {
+        from.setHours(0, 0, 0, 0);
+        filters.appliedDate.$gte = from;
+      }
+    }
+
+    if (query.appliedTo) {
+      const to = new Date(query.appliedTo);
+      if (!Number.isNaN(to.getTime())) {
+        to.setHours(23, 59, 59, 999);
+        filters.appliedDate.$lte = to;
+      }
+    }
+  }
+
+  if (query.followUpFrom || query.followUpTo) {
+    filters.followUpDate = {
+      ...(filters.followUpDate || {}),
+    };
+
+    if (query.followUpFrom) {
+      const from = new Date(query.followUpFrom);
+      if (!Number.isNaN(from.getTime())) {
+        from.setHours(0, 0, 0, 0);
+        filters.followUpDate.$gte = from;
+      }
+    }
+
+    if (query.followUpTo) {
+      const to = new Date(query.followUpTo);
+      if (!Number.isNaN(to.getTime())) {
+        to.setHours(23, 59, 59, 999);
+        filters.followUpDate.$lte = to;
+      }
+    }
+  }
+
   return filters;
 };
 
@@ -125,16 +163,49 @@ const buildExternalApplicationSearch = (search) => {
       { location: regex },
       { notes: regex },
       { sourceNotes: regex },
+      { expectedSalary: regex },
+      { 'companyNotes.interviewExperience': regex },
+      { 'companyNotes.questionsAsked': regex },
+      { 'companyNotes.recruiterInformation': regex },
+      { 'companyNotes.preparationNotes': regex },
+      { 'companyNotes.salaryDiscussion': regex },
+      { 'companyNotes.cultureNotes': regex },
+      { 'companyNotes.futureTips': regex },
+      { 'attachments.label': regex },
+      { 'attachments.notes': regex },
     ],
   };
 };
 
-export const getMyExternalApplications = asyncHandler(async (req, res) => {
-  console.info('getMyExternalApplications payload', {
-    params: req.query,
-    user: getUserSummary(req.user),
-  });
+const normalizeAttachments = (attachments) =>
+  Array.isArray(attachments)
+    ? attachments.map((attachment) => ({
+        type: attachment.type || 'Other',
+        label: attachment.label?.trim() || '',
+        url: attachment.url?.trim() || '',
+        notes: attachment.notes?.trim() || '',
+        uploadedAt: attachment.uploadedAt ? new Date(attachment.uploadedAt) : new Date(),
+      }))
+    : [];
 
+const buildCompanyNotesPayload = (companyNotes = {}) => ({
+  interviewExperience: companyNotes.interviewExperience?.trim() || '',
+  questionsAsked: companyNotes.questionsAsked?.trim() || '',
+  recruiterInformation: companyNotes.recruiterInformation?.trim() || '',
+  preparationNotes: companyNotes.preparationNotes?.trim() || '',
+  salaryDiscussion: companyNotes.salaryDiscussion?.trim() || '',
+  cultureNotes: companyNotes.cultureNotes?.trim() || '',
+  futureTips: companyNotes.futureTips?.trim() || '',
+});
+
+const buildTimelineEvent = ({ type, title, description, occurredAt = new Date() }) => ({
+  type,
+  title,
+  description,
+  occurredAt,
+});
+
+export const getMyExternalApplications = asyncHandler(async (req, res) => {
   const baseQuery = buildExternalApplicationQuery({
     ...req.query,
     userId: req.user._id,
@@ -159,11 +230,6 @@ export const getMyExternalApplications = asyncHandler(async (req, res) => {
 });
 
 export const createExternalApplication = asyncHandler(async (req, res) => {
-  console.info('createExternalApplication payload', {
-    body: req.body,
-    user: getUserSummary(req.user),
-  });
-
   const payload = {
     candidate: req.user._id,
     companyName: req.body.companyName?.trim(),
@@ -181,22 +247,15 @@ export const createExternalApplication = asyncHandler(async (req, res) => {
     notes: req.body.notes?.trim() || '',
     archived: req.body.archived === true,
     favorite: req.body.favorite === true,
-    attachments: Array.isArray(req.body.attachments) ? req.body.attachments.map((attachment) => ({
-      type: attachment.type || 'Other',
-      label: attachment.label?.trim() || '',
-      url: attachment.url?.trim() || '',
-      notes: attachment.notes?.trim() || '',
-      uploadedAt: attachment.uploadedAt ? new Date(attachment.uploadedAt) : new Date(),
-    })) : [],
-    companyNotes: {
-      interviewExperience: req.body.companyNotes?.interviewExperience?.trim() || '',
-      questionsAsked: req.body.companyNotes?.questionsAsked?.trim() || '',
-      recruiterInformation: req.body.companyNotes?.recruiterInformation?.trim() || '',
-      preparationNotes: req.body.companyNotes?.preparationNotes?.trim() || '',
-      salaryDiscussion: req.body.companyNotes?.salaryDiscussion?.trim() || '',
-      cultureNotes: req.body.companyNotes?.cultureNotes?.trim() || '',
-      futureTips: req.body.companyNotes?.futureTips?.trim() || '',
-    },
+    attachments: normalizeAttachments(req.body.attachments),
+    companyNotes: buildCompanyNotesPayload(req.body.companyNotes),
+    timeline: [
+      buildTimelineEvent({
+        type: 'Application',
+        title: 'Application created',
+        description: `Applied to ${req.body.companyName?.trim()} for ${req.body.role?.trim()}`,
+      }),
+    ],
   };
 
   const externalApplication = await ExternalApplication.create(payload);
@@ -204,6 +263,63 @@ export const createExternalApplication = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     message: 'External application created successfully',
+    externalApplication,
+  });
+});
+
+export const uploadExternalApplicationAttachment = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    throw new ErrorResponse('No attachment uploaded', 400);
+  }
+
+  const externalApplication = await ExternalApplication.findOne({
+    _id: req.params.id,
+    candidate: req.user._id,
+  });
+
+  if (!externalApplication) {
+    throw new ErrorResponse('External application not found', 404);
+  }
+
+  let result;
+
+  try {
+    result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: 'raw',
+      type: 'upload',
+      access_mode: 'public',
+      folder: 'quickhire/application-attachments',
+      use_filename: true,
+      unique_filename: true,
+    });
+  } finally {
+    if (req.file.path) {
+      fs.promises.unlink(req.file.path).catch(() => {});
+    }
+  }
+
+  const attachment = {
+    type: req.body.type || 'Other',
+    label: req.body.label?.trim() || req.file.originalname || 'Attachment',
+    url: result.secure_url || result.url || '',
+    notes: req.body.notes?.trim() || '',
+    uploadedAt: new Date(),
+  };
+
+  externalApplication.attachments.push(attachment);
+  externalApplication.timeline.push(
+    buildTimelineEvent({
+      type: 'Attachment',
+      title: 'Attachment uploaded',
+      description: attachment.label || attachment.type,
+    })
+  );
+  await externalApplication.save();
+
+  res.status(201).json({
+    success: true,
+    message: 'Attachment uploaded successfully',
+    attachment: externalApplication.attachments[externalApplication.attachments.length - 1],
     externalApplication,
   });
 });
@@ -279,12 +395,113 @@ export const updateExternalApplication = asyncHandler(async (req, res) => {
     updateData.notes = req.body.notes?.trim() || '';
   }
 
+  if (req.body.archived !== undefined) {
+    updateData.archived = req.body.archived === true;
+  }
+
+  if (req.body.favorite !== undefined) {
+    updateData.favorite = req.body.favorite === true;
+  }
+
+  if (req.body.companyNotes !== undefined) {
+    updateData.companyNotes = buildCompanyNotesPayload(req.body.companyNotes);
+  }
+
+  if (req.body.attachments !== undefined) {
+    updateData.attachments = normalizeAttachments(req.body.attachments);
+  }
+
+  const currentApplication = await ExternalApplication.findOne({
+    _id: req.params.id,
+    candidate: req.user._id,
+  });
+
+  if (!currentApplication) {
+    throw new ErrorResponse('External application not found', 404);
+  }
+
+  const timelineEvents = [];
+
+  if (updateData.status && updateData.status !== currentApplication.status) {
+    timelineEvents.push(
+      buildTimelineEvent({
+        type: updateData.status === 'Offer'
+          ? 'Offer'
+          : updateData.status === 'Rejected'
+            ? 'Rejection'
+            : 'Status Change',
+        title: `Status changed to ${updateData.status}`,
+        description: `Previous status was ${currentApplication.status}`,
+      })
+    );
+  }
+
+  if (
+    updateData.followUpDate !== undefined &&
+    String(updateData.followUpDate || '') !== String(currentApplication.followUpDate || '')
+  ) {
+    timelineEvents.push(
+      buildTimelineEvent({
+        type: 'Follow-up',
+        title: 'Follow-up updated',
+        description: updateData.followUpDate
+          ? `Follow-up scheduled for ${updateData.followUpDate.toDateString()}`
+          : 'Follow-up removed',
+      })
+    );
+  }
+
+  if (
+    updateData.archived !== undefined &&
+    updateData.archived !== currentApplication.archived
+  ) {
+    timelineEvents.push(
+      buildTimelineEvent({
+        type: 'Archive',
+        title: updateData.archived ? 'Application archived' : 'Application restored',
+      })
+    );
+  }
+
+  if (
+    updateData.favorite !== undefined &&
+    updateData.favorite !== currentApplication.favorite
+  ) {
+    timelineEvents.push(
+      buildTimelineEvent({
+        type: 'Favorite',
+        title: updateData.favorite ? 'Added to favorites' : 'Removed from favorites',
+      })
+    );
+  }
+
+  if (updateData.notes !== undefined || updateData.sourceNotes !== undefined || updateData.companyNotes !== undefined) {
+    timelineEvents.push(
+      buildTimelineEvent({
+        type: 'Note',
+        title: 'Notes updated',
+      })
+    );
+  }
+
+  const update = {
+    $set: updateData,
+  };
+
+  if (timelineEvents.length > 0) {
+    update.$push = {
+      timeline: {
+        $each: timelineEvents,
+      },
+    };
+  }
+
   const externalApplication = await ExternalApplication.findOneAndUpdate(
     {
       _id: req.params.id,
       candidate: req.user._id,
     },
-    updateData,
+    update,
     {
       new: true,
       runValidators: true,

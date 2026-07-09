@@ -1,9 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Bookmark, CalendarDays, ClipboardList, FilePlus, Flag, Link as LinkIcon, MapPin, Paperclip, Star, Trophy } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Archive, ArchiveRestore, ArrowLeft, Bookmark, ExternalLink, Flag, Paperclip, Save, Star, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-import { getExternalApplicationById, getInterviewRounds } from '../../api/applicationApi';
+import {
+  getExternalApplicationById,
+  getInterviewRounds,
+  updateExternalApplication,
+  uploadExternalApplicationAttachment,
+} from '../../api/applicationApi';
 import { getErrorMessage } from '../../utils/errorMessage';
 import PageHeader from '../../components/ui/PageHeader';
 import AppCard from '../../components/ui/AppCard';
@@ -11,8 +16,42 @@ import SectionCard from '../../components/ui/SectionCard';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Timeline from '../../components/ui/Timeline';
 import ActivityFeed from '../../components/ui/ActivityFeed';
+import AppButton from '../../components/ui/AppButton';
+import AppInput from '../../components/ui/AppInput';
+import AppSelect from '../../components/ui/AppSelect';
+import AppTextarea from '../../components/ui/AppTextarea';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+
+const statusOptions = [
+  'Applied',
+  'OA Scheduled',
+  'OA Completed',
+  'Interview Scheduled',
+  'Interviewing',
+  'HR Round',
+  'Offer',
+  'Rejected',
+  'Withdrawn',
+  'Ghosted',
+];
+
+const attachmentTypes = [
+  'Offer Letter',
+  'Assignment PDF',
+  'Interview Notes',
+  'Other',
+];
+
+const companyNoteLabels = {
+  interviewExperience: 'Interview experience',
+  questionsAsked: 'Questions asked',
+  recruiterInformation: 'Recruiter information',
+  preparationNotes: 'Preparation notes',
+  salaryDiscussion: 'Salary discussion',
+  cultureNotes: 'Culture notes',
+  futureTips: 'Future tips',
+};
 
 const ApplicationDetails = () => {
   const { id } = useParams();
@@ -21,8 +60,18 @@ const ApplicationDetails = () => {
   const [interviewRounds, setInterviewRounds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [notesForm, setNotesForm] = useState({ notes: '', sourceNotes: '' });
+  const [companyNotesForm, setCompanyNotesForm] = useState({});
+  const [attachmentForm, setAttachmentForm] = useState({
+    type: 'Other',
+    label: '',
+    notes: '',
+    file: null,
+  });
 
-  const fetchDetails = async () => {
+  const fetchDetails = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -32,6 +81,11 @@ const ApplicationDetails = () => {
       ]);
 
       setApplication(applicationResult?.externalApplication || null);
+      setNotesForm({
+        notes: applicationResult?.externalApplication?.notes || '',
+        sourceNotes: applicationResult?.externalApplication?.sourceNotes || '',
+      });
+      setCompanyNotesForm(applicationResult?.externalApplication?.companyNotes || {});
       setInterviewRounds(interviewResult?.interviewRounds || []);
     } catch (err) {
       const message = getErrorMessage(err, 'Failed to load application details');
@@ -40,14 +94,85 @@ const ApplicationDetails = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchDetails();
-  }, [id]);
+  }, [fetchDetails]);
+
+  const patchApplication = async (payload, successMessage = 'Application updated') => {
+    try {
+      setSaving(true);
+      const data = await updateExternalApplication(id, payload);
+      setApplication(data.externalApplication);
+      setNotesForm({
+        notes: data.externalApplication.notes || '',
+        sourceNotes: data.externalApplication.sourceNotes || '',
+      });
+      setCompanyNotesForm(data.externalApplication.companyNotes || {});
+      toast.success(successMessage);
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Unable to update application'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleArchiveToggle = () => {
+    const nextArchived = !application.archived;
+    const confirmed = window.confirm(
+      nextArchived ? 'Archive this application?' : 'Restore this application?'
+    );
+    if (!confirmed) return;
+
+    patchApplication(
+      { archived: nextArchived },
+      nextArchived ? 'Application archived' : 'Application restored'
+    );
+  };
+
+  const handleAttachmentSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!attachmentForm.file) {
+      toast.error('Choose a PDF attachment first');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('attachment', attachmentForm.file);
+    formData.append('type', attachmentForm.type);
+    formData.append('label', attachmentForm.label);
+    formData.append('notes', attachmentForm.notes);
+
+    try {
+      setUploading(true);
+      const data = await uploadExternalApplicationAttachment(id, formData);
+      setApplication(data.externalApplication);
+      setAttachmentForm({
+        type: 'Other',
+        label: '',
+        notes: '',
+        file: null,
+      });
+      event.target.reset();
+      toast.success('Attachment uploaded');
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Unable to upload attachment'));
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const timelineEvents = useMemo(() => {
     if (!application) return [];
+
+    const persistedEvents = (application.timeline || []).map((event) => ({
+      id: event._id || `${event.type}-${event.occurredAt}`,
+      title: event.title || event.type,
+      description: event.description,
+      date: event.occurredAt,
+    }));
 
     const events = [
       {
@@ -101,8 +226,12 @@ const ApplicationDetails = () => {
       });
     }
 
-    return events
-      .filter((event) => event.date)
+    return [...persistedEvents, ...events]
+      .filter((event) => event.date && !Number.isNaN(new Date(event.date).getTime()))
+      .filter((event, index, allEvents) => {
+        const key = `${event.title}-${new Date(event.date).toISOString()}`;
+        return allEvents.findIndex((item) => `${item.title}-${new Date(item.date).toISOString()}` === key) === index;
+      })
       .sort((a, b) => new Date(a.date) - new Date(b.date));
   }, [application, interviewRounds]);
 
@@ -212,6 +341,12 @@ const ApplicationDetails = () => {
             <Bookmark className="h-4 w-4 text-brand" />
             {application.favorite ? 'Favorited' : 'Not favorited'}
           </span>
+          {application.archived && (
+            <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600">
+              <Archive className="h-4 w-4 text-brand" />
+              Archived
+            </span>
+          )}
           <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600">
             <Flag className="h-4 w-4 text-brand" />
             Priority {application.priority}
@@ -229,7 +364,70 @@ const ApplicationDetails = () => {
                   Company, platform, status, and resume context in one place.
                 </p>
               </div>
-              <StatusBadge status={application.status} />
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge status={application.status} />
+                <button
+                  type="button"
+                  onClick={() =>
+                    patchApplication(
+                      { favorite: !application.favorite },
+                      application.favorite ? 'Removed from favorites' : 'Added to favorites'
+                    )
+                  }
+                  disabled={saving}
+                  className={`inline-flex items-center rounded-full border p-2 transition ${
+                    application.favorite
+                      ? 'border-amber-200 bg-amber-50 text-amber-600'
+                      : 'border-slate-200 text-slate-500 hover:border-brand hover:text-brand'
+                  }`}
+                  aria-label={application.favorite ? 'Remove favorite' : 'Favorite application'}
+                >
+                  <Star className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleArchiveToggle}
+                  disabled={saving}
+                  className="inline-flex items-center rounded-full border border-slate-200 p-2 text-slate-500 transition hover:border-brand hover:text-brand"
+                  aria-label={application.archived ? 'Restore application' : 'Archive application'}
+                >
+                  {application.archived ? (
+                    <ArchiveRestore className="h-4 w-4" />
+                  ) : (
+                    <Archive className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
+              <AppSelect
+                label="Update status"
+                value={application.status}
+                onChange={(event) =>
+                  patchApplication({ status: event.target.value }, 'Status updated')
+                }
+                disabled={saving}
+              >
+                {statusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </AppSelect>
+              {application.applicationUrl && (
+                <div className="flex items-end">
+                  <a
+                    href={application.applicationUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:border-brand hover:text-brand"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Open posting
+                  </a>
+                </div>
+              )}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -264,42 +462,137 @@ const ApplicationDetails = () => {
 
           <div className="grid gap-6 lg:grid-cols-2">
             <SectionCard title="Notes" subtitle="Capture conversation context and source details." hover={false}>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">Application notes</p>
-                  <p className="mt-2 text-sm text-slate-500">{application.notes || 'No notes added yet.'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">Source notes</p>
-                  <p className="mt-2 text-sm text-slate-500">{application.sourceNotes || 'No source notes yet.'}</p>
-                </div>
-              </div>
+              <form
+                className="space-y-4"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  patchApplication(notesForm, 'Notes saved');
+                }}
+              >
+                <AppTextarea
+                  label="Application notes"
+                  value={notesForm.notes}
+                  onChange={(event) =>
+                    setNotesForm((current) => ({ ...current, notes: event.target.value }))
+                  }
+                  placeholder="Add conversation context, follow-up notes, and decisions."
+                />
+                <AppTextarea
+                  label="Source notes"
+                  value={notesForm.sourceNotes}
+                  onChange={(event) =>
+                    setNotesForm((current) => ({ ...current, sourceNotes: event.target.value }))
+                  }
+                  placeholder="Capture source platform details, referral context, or job post notes."
+                />
+                <AppButton type="submit" size="md" disabled={saving}>
+                  <Save className="h-4 w-4" />
+                  {saving ? 'Saving...' : 'Save notes'}
+                </AppButton>
+              </form>
             </SectionCard>
 
             <SectionCard title="Company notes" subtitle="Structured notes for your follow-up and preparation." hover={false}>
-              <div className="space-y-4 text-sm text-slate-600">
-                {Object.entries(application.companyNotes || {}).map(([label, value]) => (
-                  <div key={label}>
-                    <p className="text-sm font-semibold text-slate-900">{label.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}</p>
-                    <p className="mt-1 text-sm text-slate-500">{value || 'Not captured yet.'}</p>
-                  </div>
+              <form
+                className="space-y-4"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  patchApplication({ companyNotes: companyNotesForm }, 'Company notes saved');
+                }}
+              >
+                {Object.entries(companyNoteLabels).map(([key, label]) => (
+                  <AppTextarea
+                    key={key}
+                    label={label}
+                    value={companyNotesForm?.[key] || ''}
+                    className="min-h-24"
+                    onChange={(event) =>
+                      setCompanyNotesForm((current) => ({
+                        ...current,
+                        [key]: event.target.value,
+                      }))
+                    }
+                  />
                 ))}
-              </div>
+                <AppButton type="submit" size="md" disabled={saving}>
+                  <Save className="h-4 w-4" />
+                  {saving ? 'Saving...' : 'Save company notes'}
+                </AppButton>
+              </form>
             </SectionCard>
           </div>
 
-          <SectionCard title="Attachments" subtitle="Placeholder support for future documents." hover={false}>
+          <SectionCard title="Attachments" subtitle="Upload offer letters, assignments, and interview PDFs." hover={false}>
+            <form onSubmit={handleAttachmentSubmit} className="mb-5 grid gap-4 md:grid-cols-2">
+              <AppSelect
+                label="Attachment type"
+                value={attachmentForm.type}
+                onChange={(event) =>
+                  setAttachmentForm((current) => ({ ...current, type: event.target.value }))
+                }
+              >
+                {attachmentTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </AppSelect>
+              <AppInput
+                label="Label"
+                value={attachmentForm.label}
+                onChange={(event) =>
+                  setAttachmentForm((current) => ({ ...current, label: event.target.value }))
+                }
+                placeholder="Offer letter, take-home assignment..."
+              />
+              <AppInput
+                label="PDF file"
+                type="file"
+                accept="application/pdf"
+                onChange={(event) =>
+                  setAttachmentForm((current) => ({
+                    ...current,
+                    file: event.target.files?.[0] || null,
+                  }))
+                }
+                required
+              />
+              <AppInput
+                label="Attachment notes"
+                value={attachmentForm.notes}
+                onChange={(event) =>
+                  setAttachmentForm((current) => ({ ...current, notes: event.target.value }))
+                }
+                placeholder="Optional context"
+              />
+              <div className="md:col-span-2">
+                <AppButton type="submit" size="md" disabled={uploading}>
+                  <Upload className="h-4 w-4" />
+                  {uploading ? 'Uploading...' : 'Upload attachment'}
+                </AppButton>
+              </div>
+            </form>
             {application.attachments && application.attachments.length > 0 ? (
               <div className="space-y-3">
                 {application.attachments.map((attachment) => (
                   <div key={attachment.url || attachment.label} className="flex items-center justify-between gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-900">{attachment.label || attachment.type}</p>
-                      <p className="mt-1 text-sm text-slate-500">{attachment.notes || 'No details provided.'}</p>
+                      <p className="mt-1 text-sm text-slate-500">{attachment.notes || attachment.type || 'No details provided.'}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Paperclip className="h-4 w-4 text-slate-400" />
                       <span className="text-xs text-slate-500">{new Date(attachment.uploadedAt).toLocaleDateString()}</span>
+                      {attachment.url && (
+                        <a
+                          href={attachment.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm font-medium text-brand"
+                        >
+                          View
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))}
