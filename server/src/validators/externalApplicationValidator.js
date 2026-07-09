@@ -99,12 +99,28 @@ export const validateExternalApplication = (req, res, next) => {
     errors.push('Application URL must be a valid URL');
   }
 
+  if (interviewCount !== undefined && interviewCount !== '' && Number(interviewCount) < 0) {
+    errors.push('Interview count must be zero or higher');
+  }
+
   if (notes !== undefined && typeof notes !== 'string') {
     errors.push('Notes must be a string');
   }
 
   if (sourceNotes !== undefined && typeof sourceNotes !== 'string') {
     errors.push('Source notes must be a string');
+  }
+
+  if (req.body.archived !== undefined && typeof req.body.archived !== 'boolean') {
+    errors.push('Archived must be true or false');
+  }
+
+  if (req.body.favorite !== undefined && typeof req.body.favorite !== 'boolean') {
+    errors.push('Favorite must be true or false');
+  }
+
+  if (req.body.companyNotes !== undefined && typeof req.body.companyNotes !== 'object') {
+    errors.push('Company notes must be a valid object');
   }
 
   if (errors.length) {

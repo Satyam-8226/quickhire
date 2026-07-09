@@ -105,6 +105,83 @@ const externalApplicationSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
+
+    archived: {
+      type: Boolean,
+      default: false,
+    },
+
+    favorite: {
+      type: Boolean,
+      default: false,
+    },
+
+    attachments: [
+      {
+        type: {
+          type: String,
+          enum: ['Offer Letter', 'Assignment PDF', 'Interview Notes', 'Other'],
+          default: 'Other',
+        },
+        label: {
+          type: String,
+          trim: true,
+          default: '',
+        },
+        url: {
+          type: String,
+          trim: true,
+          default: '',
+        },
+        notes: {
+          type: String,
+          trim: true,
+          default: '',
+        },
+        uploadedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
+    companyNotes: {
+      interviewExperience: {
+        type: String,
+        default: '',
+        trim: true,
+      },
+      questionsAsked: {
+        type: String,
+        default: '',
+        trim: true,
+      },
+      recruiterInformation: {
+        type: String,
+        default: '',
+        trim: true,
+      },
+      preparationNotes: {
+        type: String,
+        default: '',
+        trim: true,
+      },
+      salaryDiscussion: {
+        type: String,
+        default: '',
+        trim: true,
+      },
+      cultureNotes: {
+        type: String,
+        default: '',
+        trim: true,
+      },
+      futureTips: {
+        type: String,
+        default: '',
+        trim: true,
+      },
+    },
   },
   {
     timestamps: true,

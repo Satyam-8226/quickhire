@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { CalendarDays, ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
+import { Archive, CalendarDays, ChevronRight, ExternalLink, Pencil, Plus, Star, Trash2 } from "lucide-react";
 
 import {
   createExternalApplication,
@@ -22,6 +23,7 @@ import AppInput from "../../components/ui/AppInput";
 import AppSelect from "../../components/ui/AppSelect";
 import AppTextarea from "../../components/ui/AppTextarea";
 import PageHeader from "../../components/ui/PageHeader";
+import SectionCard from "../../components/ui/SectionCard";
 import StatusBadge from "../../components/ui/StatusBadge";
 import {
   AppTable,
@@ -41,12 +43,23 @@ const initialFormState = {
   appliedDate: "",
   status: "Applied",
   notes: "",
+  sourceNotes: "",
   followUpDate: "",
   interviewCount: 0,
   priority: "Medium",
   expectedSalary: "",
   location: "",
-  sourceNotes: "",
+  favorite: false,
+  archived: false,
+  companyNotes: {
+    interviewExperience: "",
+    questionsAsked: "",
+    recruiterInformation: "",
+    preparationNotes: "",
+    salaryDiscussion: "",
+    cultureNotes: "",
+    futureTips: "",
+  },
 };
 
 const statusOptions = [
@@ -80,6 +93,11 @@ const ExternalApplications = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState(initialFormState);
+  const [searchText, setSearchText] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterPlatform, setFilterPlatform] = useState("");
+  const [filterFavorite, setFilterFavorite] = useState("");
+  const [filterArchived, setFilterArchived] = useState("false");
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [interviewsByApplication, setInterviewsByApplication] = useState({});
@@ -100,13 +118,20 @@ const ExternalApplications = () => {
 
   useEffect(() => {
     fetchApplications();
-  }, []);
+  }, [searchText, filterStatus, filterPlatform, filterFavorite, filterArchived]);
 
   const fetchApplications = async () => {
     try {
       setLoading(true);
       setError("");
-      const data = await getMyExternalApplications();
+      const query = {
+        search: searchText || undefined,
+        status: filterStatus || undefined,
+        platform: filterPlatform || undefined,
+        favorite: filterFavorite || undefined,
+        archived: filterArchived || undefined,
+      };
+      const data = await getMyExternalApplications(query);
       setApplications(data?.externalApplications || []);
     } catch (err) {
       const message = getErrorMessage(err, "Failed to fetch external applications");
@@ -165,6 +190,9 @@ const ExternalApplications = () => {
         interviewCount: Number(formData.interviewCount || 0),
         expectedSalary: formData.expectedSalary.trim(),
         location: formData.location.trim(),
+        favorite: Boolean(formData.favorite),
+        archived: Boolean(formData.archived),
+        companyNotes: formData.companyNotes,
       };
 
       if (editingId) {
@@ -197,6 +225,7 @@ const ExternalApplications = () => {
         : "",
       status: application.status || "Applied",
       notes: application.notes || "",
+      sourceNotes: application.sourceNotes || "",
       followUpDate: application.followUpDate
         ? new Date(application.followUpDate).toISOString().slice(0, 10)
         : "",
@@ -204,7 +233,17 @@ const ExternalApplications = () => {
       priority: application.priority || "Medium",
       expectedSalary: application.expectedSalary || "",
       location: application.location || "",
-      sourceNotes: application.sourceNotes || "",
+      favorite: application.favorite || false,
+      archived: application.archived || false,
+      companyNotes: {
+        interviewExperience: application.companyNotes?.interviewExperience || "",
+        questionsAsked: application.companyNotes?.questionsAsked || "",
+        recruiterInformation: application.companyNotes?.recruiterInformation || "",
+        preparationNotes: application.companyNotes?.preparationNotes || "",
+        salaryDiscussion: application.companyNotes?.salaryDiscussion || "",
+        cultureNotes: application.companyNotes?.cultureNotes || "",
+        futureTips: application.companyNotes?.futureTips || "",
+      },
     });
     setIsFormOpen(true);
   };
@@ -366,6 +405,62 @@ const ExternalApplications = () => {
         }
       />
 
+      <AppCard hover={false} className="space-y-4">
+        <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr] xl:grid-cols-[2fr_1fr]">
+          <AppInput
+            label="Search applications"
+            name="search"
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            placeholder="Search by company, role, platform, notes..."
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <AppSelect
+              label="Status"
+              value={filterStatus}
+              onChange={(event) => setFilterStatus(event.target.value)}
+            >
+              <option value="">All statuses</option>
+              {statusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </AppSelect>
+            <AppSelect
+              label="Platform"
+              value={filterPlatform}
+              onChange={(event) => setFilterPlatform(event.target.value)}
+            >
+              <option value="">All platforms</option>
+              {platformOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </AppSelect>
+            <AppSelect
+              label="Favorite"
+              value={filterFavorite}
+              onChange={(event) => setFilterFavorite(event.target.value)}
+            >
+              <option value="">All</option>
+              <option value="true">Favorited</option>
+              <option value="false">Not favorited</option>
+            </AppSelect>
+            <AppSelect
+              label="Archived"
+              value={filterArchived}
+              onChange={(event) => setFilterArchived(event.target.value)}
+            >
+              <option value="false">Active only</option>
+              <option value="true">Archived</option>
+              <option value="">All</option>
+            </AppSelect>
+          </div>
+        </div>
+      </AppCard>
+
       {isFormOpen && (
         <AppCard hover={false}>
           <div className="mb-6 flex items-start justify-between gap-4">
@@ -481,6 +576,39 @@ const ExternalApplications = () => {
               />
             </div>
 
+            <div className="grid gap-6 md:grid-cols-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                <input
+                  type="checkbox"
+                  name="favorite"
+                  checked={formData.favorite}
+                  onChange={(event) =>
+                    setFormData((current) => ({
+                      ...current,
+                      favorite: event.target.checked,
+                    }))
+                  }
+                  className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
+                />
+                Favorite this application
+              </label>
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                <input
+                  type="checkbox"
+                  name="archived"
+                  checked={formData.archived}
+                  onChange={(event) =>
+                    setFormData((current) => ({
+                      ...current,
+                      archived: event.target.checked,
+                    }))
+                  }
+                  className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
+                />
+                Archive this application
+              </label>
+            </div>
+
             <AppTextarea
               label="Notes"
               name="notes"
@@ -495,6 +623,41 @@ const ExternalApplications = () => {
               onChange={handleChange}
               placeholder="Reference details from the source platform."
             />
+
+            <SectionCard title="Company notes" hover={false} className="p-0" actions={null}>
+              <div className="grid gap-4">
+                <AppTextarea
+                  label="Interview experience"
+                  name="companyNotes.interviewExperience"
+                  value={formData.companyNotes.interviewExperience}
+                  onChange={(event) =>
+                    setFormData((current) => ({
+                      ...current,
+                      companyNotes: {
+                        ...current.companyNotes,
+                        interviewExperience: event.target.value,
+                      },
+                    }))
+                  }
+                  placeholder="Capture the candidate experience and impressions."
+                />
+                <AppTextarea
+                  label="Recruiter information"
+                  name="companyNotes.recruiterInformation"
+                  value={formData.companyNotes.recruiterInformation}
+                  onChange={(event) =>
+                    setFormData((current) => ({
+                      ...current,
+                      companyNotes: {
+                        ...current.companyNotes,
+                        recruiterInformation: event.target.value,
+                      },
+                    }))
+                  }
+                  placeholder="Record contact details or recruiter notes."
+                />
+              </div>
+            </SectionCard>
 
             <div className="flex flex-wrap justify-end gap-3">
               <AppButton type="button" variant="secondary" onClick={resetForm}>
@@ -543,6 +706,13 @@ const ExternalApplications = () => {
                   </AppTableCell>
                   <AppTableCell>
                     <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                        to={`/candidate/external-applications/${application._id}`}
+                        className="inline-flex items-center rounded-full border border-slate-200 p-2 text-slate-500 transition hover:border-brand hover:text-brand"
+                        aria-label="View application details"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Link>
                       {application.applicationUrl && (
                         <a
                           href={application.applicationUrl}

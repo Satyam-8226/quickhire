@@ -38,6 +38,7 @@ import Register from "../pages/auth/Register";
 import CandidateDashboard from "../pages/candidate/CandidateDashboard";
 import Applications from "../pages/candidate/Applications";
 import ExternalApplications from "../pages/candidate/ExternalApplications";
+import ApplicationDetails from "../pages/candidate/ApplicationDetails";
 import Resume from "../pages/candidate/Resume";
 
 
@@ -125,6 +126,11 @@ function AppRoutes() {
             <Route
               path="external-applications"
               element={<ExternalApplications />}
+            />
+
+            <Route
+              path="external-applications/:id"
+              element={<ApplicationDetails />}
             />
 
             <Route

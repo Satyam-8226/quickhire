@@ -54,14 +54,102 @@ const normalizeOptionalNumber = (value) => {
   return parsed;
 };
 
+const buildExternalApplicationQuery = (query) => {
+  const filters = { candidate: query.userId };
+
+  if (query.favorite === 'true') filters.favorite = true;
+  if (query.favorite === 'false') filters.favorite = false;
+  if (query.archived === 'true') {
+    filters.archived = true;
+  } else if (query.archived === 'false') {
+    filters.archived = false;
+  } else {
+    filters.archived = false;
+  }
+
+  if (query.status) {
+    filters.status = query.status;
+  }
+
+  if (query.platform) {
+    filters.platform = query.platform;
+  }
+
+  if (query.priority === 'High') {
+    filters.priority = 'High';
+  }
+
+  if (query.today === 'true') {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    filters.appliedDate = { $gte: start, $lt: end };
+  }
+
+  if (query.tomorrow === 'true') {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() + 1);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    filters.appliedDate = { $gte: start, $lt: end };
+  }
+
+  if (query.thisWeek === 'true') {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    filters.appliedDate = { $gte: start, $lt: end };
+  }
+
+  if (query.overdue === 'true') {
+    const now = new Date();
+    filters.followUpDate = { $lt: now };
+  }
+
+  return filters;
+};
+
+const buildExternalApplicationSearch = (search) => {
+  if (!search) return null;
+
+  const regex = new RegExp(search.trim(), 'i');
+
+  return {
+    $or: [
+      { companyName: regex },
+      { role: regex },
+      { platform: regex },
+      { location: regex },
+      { notes: regex },
+      { sourceNotes: regex },
+    ],
+  };
+};
+
 export const getMyExternalApplications = asyncHandler(async (req, res) => {
   console.info('getMyExternalApplications payload', {
+    params: req.query,
     user: getUserSummary(req.user),
   });
 
-  const externalApplications = await ExternalApplication.find({
-    candidate: req.user._id,
-  }).sort({ appliedDate: -1, createdAt: -1 });
+  const baseQuery = buildExternalApplicationQuery({
+    ...req.query,
+    userId: req.user._id,
+  });
+
+  const searchQuery = buildExternalApplicationSearch(req.query.search);
+
+  const query = searchQuery ? { $and: [baseQuery, searchQuery] } : baseQuery;
+
+  const externalApplications = await ExternalApplication.find(query).sort({
+    favorite: -1,
+    archived: 1,
+    appliedDate: -1,
+    createdAt: -1,
+  });
 
   res.status(200).json({
     success: true,
@@ -91,6 +179,24 @@ export const createExternalApplication = asyncHandler(async (req, res) => {
     location: req.body.location?.trim() || '',
     sourceNotes: req.body.sourceNotes?.trim() || '',
     notes: req.body.notes?.trim() || '',
+    archived: req.body.archived === true,
+    favorite: req.body.favorite === true,
+    attachments: Array.isArray(req.body.attachments) ? req.body.attachments.map((attachment) => ({
+      type: attachment.type || 'Other',
+      label: attachment.label?.trim() || '',
+      url: attachment.url?.trim() || '',
+      notes: attachment.notes?.trim() || '',
+      uploadedAt: attachment.uploadedAt ? new Date(attachment.uploadedAt) : new Date(),
+    })) : [],
+    companyNotes: {
+      interviewExperience: req.body.companyNotes?.interviewExperience?.trim() || '',
+      questionsAsked: req.body.companyNotes?.questionsAsked?.trim() || '',
+      recruiterInformation: req.body.companyNotes?.recruiterInformation?.trim() || '',
+      preparationNotes: req.body.companyNotes?.preparationNotes?.trim() || '',
+      salaryDiscussion: req.body.companyNotes?.salaryDiscussion?.trim() || '',
+      cultureNotes: req.body.companyNotes?.cultureNotes?.trim() || '',
+      futureTips: req.body.companyNotes?.futureTips?.trim() || '',
+    },
   };
 
   const externalApplication = await ExternalApplication.create(payload);

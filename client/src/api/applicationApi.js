@@ -60,8 +60,22 @@ export const activateResume = async (versionId) => {
   return response.data;
 };
 
-export const getMyExternalApplications = async () => {
-  const response = await api.get('/external-applications');
+export const getMyExternalApplications = async (query = {}) => {
+  const params = new URLSearchParams();
+
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      params.append(key, value);
+    }
+  });
+
+  const queryString = params.toString();
+  const response = await api.get(`/external-applications${queryString ? `?${queryString}` : ''}`);
+  return response.data;
+};
+
+export const getExternalApplicationById = async (id) => {
+  const response = await api.get(`/external-applications/${id}`);
   return response.data;
 };
 
