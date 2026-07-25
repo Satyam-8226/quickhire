@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Archive, ArchiveRestore, CalendarDays, ChevronRight, ExternalLink, Pencil, Plus, Star, Trash2 } from "lucide-react";
@@ -121,6 +121,7 @@ const ExternalApplications = () => {
   const [activeInterviewApplicationId, setActiveInterviewApplicationId] = useState(null);
   const [editingInterviewId, setEditingInterviewId] = useState(null);
   const [interviewSubmitting, setInterviewSubmitting] = useState(false);
+  const formRef = useRef(null);
 
   const fetchApplications = useCallback(async () => {
     try {
@@ -173,6 +174,57 @@ const ExternalApplications = () => {
     setFormData(initialFormState);
     setEditingId(null);
     setIsFormOpen(false);
+  };
+
+  const scrollFormIntoView = () => {
+    window.setTimeout(() => {
+      formRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+  };
+
+  const openApplicationForm = (application = null) => {
+    if (application) {
+      setEditingId(application._id);
+      setFormData({
+        companyName: application.companyName || "",
+        role: application.role || "",
+        platform: application.platform || "",
+        applicationUrl: application.applicationUrl || "",
+        appliedDate: application.appliedDate
+          ? new Date(application.appliedDate).toISOString().slice(0, 10)
+          : "",
+        status: application.status || "Applied",
+        notes: application.notes || "",
+        sourceNotes: application.sourceNotes || "",
+        followUpDate: application.followUpDate
+          ? new Date(application.followUpDate).toISOString().slice(0, 10)
+          : "",
+        interviewCount: application.interviewCount || 0,
+        priority: application.priority || "Medium",
+        expectedSalary: application.expectedSalary || "",
+        location: application.location || "",
+        favorite: application.favorite || false,
+        archived: application.archived || false,
+        companyNotes: {
+          interviewExperience: application.companyNotes?.interviewExperience || "",
+          questionsAsked: application.companyNotes?.questionsAsked || "",
+          recruiterInformation: application.companyNotes?.recruiterInformation || "",
+          preparationNotes: application.companyNotes?.preparationNotes || "",
+          salaryDiscussion: application.companyNotes?.salaryDiscussion || "",
+          cultureNotes: application.companyNotes?.cultureNotes || "",
+          futureTips: application.companyNotes?.futureTips || "",
+        },
+      });
+    } else {
+      setEditingId(null);
+      setFormData(initialFormState);
+    }
+
+    setIsFormOpen(true);
+    scrollFormIntoView();
   };
 
   const resetInterviewForm = () => {
@@ -241,38 +293,7 @@ const ExternalApplications = () => {
   };
 
   const handleEdit = (application) => {
-    setEditingId(application._id);
-    setFormData({
-      companyName: application.companyName || "",
-      role: application.role || "",
-      platform: application.platform || "",
-      applicationUrl: application.applicationUrl || "",
-      appliedDate: application.appliedDate
-        ? new Date(application.appliedDate).toISOString().slice(0, 10)
-        : "",
-      status: application.status || "Applied",
-      notes: application.notes || "",
-      sourceNotes: application.sourceNotes || "",
-      followUpDate: application.followUpDate
-        ? new Date(application.followUpDate).toISOString().slice(0, 10)
-        : "",
-      interviewCount: application.interviewCount || 0,
-      priority: application.priority || "Medium",
-      expectedSalary: application.expectedSalary || "",
-      location: application.location || "",
-      favorite: application.favorite || false,
-      archived: application.archived || false,
-      companyNotes: {
-        interviewExperience: application.companyNotes?.interviewExperience || "",
-        questionsAsked: application.companyNotes?.questionsAsked || "",
-        recruiterInformation: application.companyNotes?.recruiterInformation || "",
-        preparationNotes: application.companyNotes?.preparationNotes || "",
-        salaryDiscussion: application.companyNotes?.salaryDiscussion || "",
-        cultureNotes: application.companyNotes?.cultureNotes || "",
-        futureTips: application.companyNotes?.futureTips || "",
-      },
-    });
-    setIsFormOpen(true);
+    openApplicationForm(application);
   };
 
   const handleDelete = async (applicationId) => {
@@ -494,11 +515,7 @@ const ExternalApplications = () => {
         cta={
           <AppButton
             size="md"
-            onClick={() => {
-              setIsFormOpen(true);
-              setEditingId(null);
-              setFormData(initialFormState);
-            }}
+            onClick={() => openApplicationForm()}
           >
             <Plus className="h-4 w-4" />
             Add Application
@@ -631,7 +648,11 @@ const ExternalApplications = () => {
       </AppCard>
 
       {isFormOpen && (
-        <AppCard hover={false}>
+        <AppCard
+          ref={formRef}
+          hover={false}
+          className="scroll-mt-6 border-brand/30 shadow-md shadow-brand/10"
+        >
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold text-slate-900">

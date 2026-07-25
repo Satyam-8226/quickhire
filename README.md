@@ -13,9 +13,10 @@ QuickHire AI is a full-stack Applicant Tracking System (ATS) and job portal buil
 
 - Full-Stack ATS & Job Portal
 - Resume Versioning System
+- Personal Career CRM for external job tracking
 - Role-Based Authentication (Candidate & Recruiter)
 - Applicant Tracking Workflow
-- Cloudinary Resume Storage
+- Cloudinary Resume and Attachment Storage
 - Responsive SaaS-Style UI
 - JWT Secure Authentication
 
@@ -29,6 +30,9 @@ QuickHire AI is a full-stack Applicant Tracking System (ATS) and job portal buil
 - Application tracking with status badges
 - Resume upload (PDF), view, and download
 - Resume versioning with active version selection
+- External application tracker for roles applied outside QuickHire
+- CRM-style application details with timeline, activity feed, interviews, notes, attachments, favorites, and archive/restore
+- Smart search and advanced filters for external applications
 
 ### Recruiter Features
 
@@ -37,6 +41,16 @@ QuickHire AI is a full-stack Applicant Tracking System (ATS) and job portal buil
 - View applicants per job with detailed profiles
 - Resume view and download for each applicant
 - Application status updates (pending, reviewed, accepted, rejected)
+
+### Career CRM Capabilities
+
+- Track external applications from LinkedIn, Internshala, Wellfound, Naukri, Indeed, referrals, company career pages, and other sources
+- Maintain company notes, preparation notes, recruiter information, interview experience, questions asked, salary discussion, culture notes, and future tips
+- Manage interview rounds with schedule, mode, interviewer, meeting link, notes, feedback, and status
+- View chronological timeline events for application creation, status changes, interviews, follow-ups, offers, rejections, notes, favorites, archive/restore, and attachments
+- Upload application attachments such as offer letters, assignment PDFs, and interview notes through the existing Cloudinary storage flow
+- Favorite important opportunities and archive or restore completed applications
+- Use smart search and filters by status, platform, priority, favorite, archive state, applied date, and follow-up date
 
 ### Resume Versioning
 
@@ -69,8 +83,9 @@ QuickHire AI is a full-stack Applicant Tracking System (ATS) and job portal buil
 QuickHire AI follows a classic **SPA + REST API** architecture:
 
 - The **React client** handles routing, UI state, and calls the API through a shared Axios instance (`VITE_API_URL`).
-- The **Express server** exposes `/api/auth`, `/api/jobs`, and `/api/applications` routes with JWT middleware and role checks.
-- **MongoDB** stores users, jobs, and applications; resumes are stored in **Cloudinary** with URLs persisted on the user record.
+- The **Express server** exposes `/api/auth`, `/api/jobs`, `/api/applications`, `/api/external-applications`, and interview routes with JWT middleware and role checks.
+- **MongoDB** stores users, jobs, applications, external applications, interviews, timeline entries, company notes, and attachment metadata.
+- **Cloudinary** stores resume files and Career CRM attachments with URLs persisted in MongoDB.
 
 
 ![ARCHITECTURE DIAGRAM](./screenshots/architecture.png)
@@ -160,24 +175,21 @@ Open `http://localhost:5173` after both servers are running.
 
 ## Deployment
 
-- Frontend        :     Nginx
-- Backend         :     Node.js managed by PM2
-- Reverse Proxy   :     Nginx
 - Hosting         :     AWS EC2
+- Frontend        :     Vite production build served by Nginx
+- Backend         :     Node.js / Express API managed by PM2
+- Reverse Proxy   :     Nginx routes API traffic to the PM2 backend process
+- Process Manager :     PM2 keeps the API running across restarts
 - Database        :     MongoDB Atlas
-- Resume Storage  :     Cloudinary
+- File Storage    :     Cloudinary for resumes and Career CRM attachments
+- Environment     :     Production `.env` values for MongoDB, JWT, Cloudinary, CORS, and API URLs
 
 ## Future Roadmap
 
 ### Phase 2: Personal Career CRM
 
-- External application tracking (LinkedIn, Internshala, Wellfound, Naukri, company career pages)
-- Interview scheduling and notes
-- Assignment tracking and reminders
-- Resume-to-application mapping
-- Follow-up reminders and notifications
-- Resume performance analytics
-- Job search insights dashboard
+- Completed: external application tracking, CRM-style details, timeline, activity feed, interview history, notes, company notes, attachments, favorites, archive/restore, smart search, advanced filters, improved dashboard cards, loading states, empty states, error states, confirmation dialogs, and responsive UI polish
+- Planned: assignment-specific workflow, reminder notifications, resume-to-application mapping, resume performance analytics, and deeper job search insights dashboard
 
 ## Author
 

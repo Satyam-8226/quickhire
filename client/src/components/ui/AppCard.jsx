@@ -1,15 +1,20 @@
+import { forwardRef } from "react";
 import { cn } from "../../utils/cn";
 
-const AppCard = ({
-  children,
-  className = "",
-  hover = true,
-  padding = true,
-  as: Component = "div",
-  ...props
-}) => {
+const AppCard = forwardRef(function AppCard(
+  {
+    children,
+    className = "",
+    hover = true,
+    padding = true,
+    as: Component = "div",
+    ...props
+  },
+  ref
+) {
   return (
     <Component
+      ref={ref}
       className={cn(
         "rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-200/60",
         hover &&
@@ -22,6 +27,6 @@ const AppCard = ({
       {children}
     </Component>
   );
-};
+});
 
 export default AppCard;
