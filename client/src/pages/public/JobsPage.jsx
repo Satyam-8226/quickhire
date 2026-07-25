@@ -80,8 +80,8 @@ const JobsPage = () => {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-      <header className="mb-8">
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
+      <header className="mb-7">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
           Open roles
         </p>
@@ -94,9 +94,9 @@ const JobsPage = () => {
       </header>
 
       <AppCard hover={false} className="mb-6 !p-5">
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-slate-500">
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
               Search
             </label>
             <div className="relative">

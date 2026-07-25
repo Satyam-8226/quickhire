@@ -13,8 +13,8 @@ const variants = {
 };
 
 const sizes = {
-  md: "h-11 px-5 text-sm",
-  lg: "h-12 px-6 text-sm",
+  md: "min-h-10 px-4 text-sm",
+  lg: "min-h-11 px-5 text-sm",
 };
 
 export const buttonClassName = ({
@@ -25,6 +25,7 @@ export const buttonClassName = ({
 } = {}) =>
   cn(
     "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50",
+    "active:scale-[0.99] focus-visible:ring-4 focus-visible:ring-brand/15",
     variants[variant],
     sizes[size],
     fullWidth && "w-full",

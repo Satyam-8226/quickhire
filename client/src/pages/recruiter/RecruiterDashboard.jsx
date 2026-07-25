@@ -80,7 +80,7 @@ const RecruiterDashboard = () => {
           {[1, 2, 3, 4, 5, 6].map((item) => (
             <div
               key={item}
-              className="animate-pulse rounded-3xl border border-slate-200 bg-white p-5"
+              className="animate-pulse rounded-2xl border border-slate-200 bg-white p-5"
             >
               <div className="h-2.5 w-20 rounded bg-slate-100" />
               <div className="mt-3 h-8 w-12 rounded bg-slate-100" />
@@ -109,12 +109,12 @@ const RecruiterDashboard = () => {
 
   return (
     <div className="mx-auto max-w-7xl">
-      <header className="relative mb-8 overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-sm">
+      <header className="relative mb-7 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm shadow-slate-200/60 sm:mb-8">
         <div
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(243,240,255,0.9),transparent_55%),linear-gradient(to_bottom_right,#ffffff,#f8fafc)]"
           aria-hidden
         />
-        <div className="relative flex flex-col gap-6 p-8 md:flex-row md:items-center md:justify-between md:p-10">
+        <div className="relative flex flex-col gap-5 p-5 sm:p-7 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0 max-w-2xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
               Recruiter dashboard
@@ -122,7 +122,7 @@ const RecruiterDashboard = () => {
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-[2rem] md:leading-tight">
               Hiring overview
             </h1>
-            <p className="mt-2.5 text-sm leading-relaxed text-slate-500">
+            <p className="mt-2.5 text-sm leading-6 text-slate-500">
               Monitor job postings, review applicants, and manage your hiring
               pipeline from one place.
             </p>

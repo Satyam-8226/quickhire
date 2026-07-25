@@ -30,18 +30,18 @@ function Home() {
     <div>
       <section className="relative overflow-hidden border-b border-slate-200 bg-white">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,#f3f0ff,transparent_50%)]" />
-        <div className="relative mx-auto max-w-7xl px-4 py-20 text-center sm:px-6 md:py-32">
+        <div className="relative mx-auto max-w-7xl px-4 py-16 text-center sm:px-6 md:py-24">
           <p className="mb-4 inline-flex items-center rounded-full bg-brand-light px-4 py-1.5 text-sm font-medium text-brand">
             AI-powered hiring platform
           </p>
-          <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight text-slate-900 md:text-6xl">
+          <h1 className="mx-auto max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 md:text-6xl">
             Find your next great opportunity
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-500">
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-500 md:text-lg">
             QuickHire connects talented job seekers with amazing employers through
             a modern, transparent hiring experience.
           </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <AppButtonLink to="/jobs" size="lg">
               Browse Jobs
               <ArrowRight className="h-4 w-4" />
@@ -53,10 +53,10 @@ function Home() {
         </div>
       </section>
 
-      <section className="py-24">
+      <section className="py-16 md:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="mb-16 text-center">
-            <h2 className="text-4xl font-bold text-slate-900">
+          <div className="mb-10 text-center md:mb-12">
+            <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
               Why choose QuickHire?
             </h2>
             <p className="mt-4 text-sm text-slate-500">
@@ -68,22 +68,22 @@ function Home() {
             {features.map((feature) => (
               <AppCard key={feature.title}>
                 <feature.icon className="mb-4 h-8 w-8 text-brand" />
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                <h3 className="mb-2 text-lg font-semibold text-slate-900">
                   {feature.title}
                 </h3>
-                <p className="text-sm text-slate-500">{feature.description}</p>
+                <p className="text-sm leading-6 text-slate-500">{feature.description}</p>
               </AppCard>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-t border-slate-200 bg-white py-24">
+      <section className="border-t border-slate-200 bg-white py-16 md:py-20">
         <div className="mx-auto max-w-4xl px-6 text-center">
-          <h2 className="text-4xl font-bold text-slate-900 mb-4">
+          <h2 className="mb-3 text-3xl font-semibold tracking-tight text-slate-900">
             Ready to get hired?
           </h2>
-          <p className="text-sm text-slate-500 mb-10">
+          <p className="mb-8 text-sm leading-6 text-slate-500">
             Browse thousands of job opportunities and start your career journey
             today.
           </p>

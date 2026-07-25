@@ -48,7 +48,7 @@ const getExperienceLabel = (job) => {
 };
 
 const SkillBadge = ({ label }) => (
-  <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+  <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 transition-colors group-hover:bg-slate-200/70">
     {label}
   </span>
 );
@@ -87,7 +87,7 @@ const JobCard = ({
       <Link to={`/jobs/${job._id}`} className="block min-w-0">
         <AppCard
           hover
-          className="group !p-5 transition-all duration-200 hover:border-brand/20 hover:shadow-md"
+          className="group !p-5"
         >
           <div className="flex items-start gap-4">
             <div
@@ -159,11 +159,11 @@ const JobCard = ({
   return (
     <AppCard>
       <div className="mb-4">
-        <h2 className="mb-1 text-xl font-semibold text-slate-900">{job.title}</h2>
+        <h2 className="mb-1 text-lg font-semibold tracking-tight text-slate-900">{job.title}</h2>
         <p className="font-medium text-slate-500">{job.company}</p>
       </div>
 
-      <div className="mb-6 space-y-2 text-sm text-slate-500">
+      <div className="mb-5 space-y-2 text-sm leading-6 text-slate-500">
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
           <span>{job.location}</span>
@@ -194,11 +194,11 @@ const JobCard = ({
         </div>
       )}
 
-      <p className="mb-6 line-clamp-2 text-sm leading-relaxed text-slate-600">
+      <p className="mb-5 line-clamp-2 text-sm leading-6 text-slate-600">
         {job.description}
       </p>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2.5">
         <AppButtonLink to={`/jobs/${job._id}`} className="flex-1 min-w-[140px]">
           View Details
         </AppButtonLink>

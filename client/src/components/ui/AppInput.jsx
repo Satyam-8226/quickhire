@@ -1,10 +1,10 @@
 import { forwardRef } from "react";
 import { cn } from "../../utils/cn";
 
-const labelClassName = "mb-2 block text-sm font-medium text-slate-900";
+const labelClassName = "mb-1.5 block text-sm font-medium text-slate-700";
 
 export const inputClassName =
-  "h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-60";
+  "h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-brand focus:ring-4 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-60";
 
 const AppInput = forwardRef(function AppInput(
   { label, id, className = "", wrapperClassName = "", error, ...props },

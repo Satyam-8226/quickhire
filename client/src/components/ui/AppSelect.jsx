@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { inputClassName } from "./AppInput";
 
-const labelClassName = "mb-2 block text-sm font-medium text-slate-900";
+const labelClassName = "mb-1.5 block text-sm font-medium text-slate-700";
 
 const AppSelect = forwardRef(function AppSelect(
   { label, id, className = "", wrapperClassName = "", children, ...props },

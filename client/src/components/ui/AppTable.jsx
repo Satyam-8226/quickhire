@@ -19,21 +19,21 @@ export function AppTableElement({ children, className = "" }) {
 
 export function AppTableHead({ children }) {
   return (
-    <thead className="border-b border-slate-200 bg-slate-50/80">
+    <thead className="border-b border-slate-200 bg-slate-50/90">
       {children}
     </thead>
   );
 }
 
 export function AppTableBody({ children }) {
-  return <tbody className="divide-y divide-slate-100">{children}</tbody>;
+  return <tbody className="divide-y divide-slate-100 bg-white">{children}</tbody>;
 }
 
 export function AppTableRow({ children, className = "" }) {
   return (
     <tr
       className={cn(
-        "transition-colors duration-150 hover:bg-brand-light/40",
+        "transition-colors duration-150 hover:bg-brand-light/45",
         className
       )}
     >
@@ -46,7 +46,7 @@ export function AppTableHeaderCell({ children, className = "" }) {
   return (
     <th
       className={cn(
-        "px-6 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500",
+        "whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 sm:px-5",
         className
       )}
     >
@@ -57,7 +57,7 @@ export function AppTableHeaderCell({ children, className = "" }) {
 
 export function AppTableCell({ children, className = "" }) {
   return (
-    <td className={cn("px-6 py-4 text-sm text-slate-700", className)}>
+    <td className={cn("px-4 py-3.5 text-sm leading-6 text-slate-700 sm:px-5", className)}>
       {children}
     </td>
   );

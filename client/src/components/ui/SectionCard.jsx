@@ -11,11 +11,11 @@ const SectionCard = ({
 }) => {
   return (
     <AppCard hover={hover} className={cn("min-w-0", className)}>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
+          <h2 className="text-lg font-semibold tracking-tight text-slate-900">{title}</h2>
           {subtitle && (
-            <p className="mt-2 text-sm text-slate-500">{subtitle}</p>
+            <p className="mt-1.5 text-sm leading-6 text-slate-500">{subtitle}</p>
           )}
         </div>
         {actions && (

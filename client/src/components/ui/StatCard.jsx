@@ -12,13 +12,13 @@ const StatCard = ({ title, value, icon, description, compact = false }) => {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">
             {title}
           </p>
           <p
             className={cn(
-              "mt-1.5 font-semibold tracking-tight text-slate-900 tabular-nums",
-              compact ? "text-3xl" : "text-[2rem] leading-none"
+              "mt-1 font-semibold tracking-tight text-slate-900 tabular-nums",
+              compact ? "text-2xl" : "text-3xl leading-none"
             )}
           >
             {value}
@@ -38,7 +38,7 @@ const StatCard = ({ title, value, icon, description, compact = false }) => {
         )}
       </div>
       {description && (
-        <p className="mt-3 text-xs leading-relaxed text-slate-400">{description}</p>
+        <p className="mt-3 text-xs leading-5 text-slate-500">{description}</p>
       )}
     </AppCard>
   );

@@ -21,18 +21,18 @@ const EmptyState = ({
       aria-live="polite"
       className={cn(
         "flex flex-col items-center text-center",
-        embedded ? "py-10 px-4" : "py-14 px-6",
+        embedded ? "px-4 py-9" : "px-5 py-12 sm:px-6",
         className
       )}
     >
       <div
         className={cn(
-          "mb-5 flex items-center justify-center rounded-2xl border border-brand/10 bg-brand-light/60 text-brand",
-          embedded ? "h-14 w-14" : "h-16 w-16"
+          "mb-4 flex items-center justify-center rounded-2xl border border-brand/10 bg-brand-light/70 text-brand shadow-sm shadow-brand/5",
+          embedded ? "h-12 w-12" : "h-14 w-14"
         )}
       >
         <Icon
-          className={cn(embedded ? "h-6 w-6" : "h-7 w-7")}
+          className={cn(embedded ? "h-5 w-5" : "h-6 w-6")}
           strokeWidth={1.75}
         />
       </div>
@@ -46,7 +46,7 @@ const EmptyState = ({
       </h3>
       <p
         className={cn(
-          "mt-2 max-w-sm text-slate-500 leading-relaxed",
+          "mt-2 max-w-sm leading-6 text-slate-500",
           embedded ? "text-xs" : "text-sm"
         )}
       >
@@ -67,7 +67,7 @@ const EmptyState = ({
 
   if (embedded) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60">
+      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70">
         {content}
       </div>
     );

@@ -68,10 +68,10 @@ function JobDetailsPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 animate-pulse space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6 px-4 py-6 sm:px-6 lg:py-8 animate-pulse">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-10 w-2/3 max-w-md" />
-        <AppCard hover={false} className="!p-8 space-y-4">
+        <AppCard hover={false} className="space-y-4 !p-5 sm:!p-7">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-5/6" />
           <Skeleton className="h-4 w-4/6" />
@@ -92,27 +92,27 @@ function JobDetailsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-8">
+    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:py-8">
       <AppButton
         variant="ghost"
         size="md"
         onClick={() => navigate(-1)}
-        className="mb-8 gap-2 !px-0"
+        className="mb-6 gap-2 !px-0"
       >
         <ArrowLeft className="h-5 w-5" />
         Back
       </AppButton>
 
-      <AppCard className="mb-8 p-8">
-        <div className="mb-6">
-          <h1 className="text-4xl font-bold text-slate-900 mb-3">{job.title}</h1>
-          <div className="flex items-center gap-2 text-lg text-slate-500">
+      <AppCard className="mb-6 p-5 sm:p-7">
+        <div className="mb-5">
+          <h1 className="mb-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">{job.title}</h1>
+          <div className="flex items-center gap-2 text-base text-slate-500">
             <Building2 className="h-5 w-5 text-brand" />
             <span>{job.company}</span>
           </div>
         </div>
 
-        <div className="mb-8 grid gap-6 border-y border-slate-100 py-6 md:grid-cols-4">
+        <div className="mb-6 grid gap-5 border-y border-slate-100 py-5 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
               Location
@@ -171,24 +171,24 @@ function JobDetailsPage() {
         )}
       </AppCard>
 
-      <AppCard className="p-8">
-        <h2 className="text-xl font-semibold text-slate-900 mb-6">
+      <AppCard className="p-5 sm:p-7">
+        <h2 className="mb-5 text-lg font-semibold tracking-tight text-slate-900">
           About this job
         </h2>
-        <p className="mb-8 whitespace-pre-wrap leading-relaxed text-slate-600">
+        <p className="mb-7 whitespace-pre-wrap text-sm leading-7 text-slate-600 sm:text-base">
           {job.description}
         </p>
 
         {job.requirements?.length > 0 && (
           <div>
-            <h3 className="text-xl font-semibold text-slate-900 mb-4">
+            <h3 className="mb-4 text-lg font-semibold text-slate-900">
               Requirements
             </h3>
             <ul className="space-y-3">
               {job.requirements.map((requirement, index) => (
                 <li
                   key={index}
-                  className="flex items-start gap-3 text-slate-600"
+                  className="flex items-start gap-3 text-sm leading-6 text-slate-600 sm:text-base"
                 >
                   <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-brand" />
                   <span>{requirement}</span>

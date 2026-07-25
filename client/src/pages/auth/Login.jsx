@@ -54,19 +54,19 @@ function Login() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-6 py-16">
+    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12 sm:px-6">
       <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand text-lg font-bold text-white">
+        <div className="mb-7 text-center">
+          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand text-lg font-semibold text-white shadow-sm shadow-brand/25">
             Q
           </span>
-          <h1 className="text-4xl font-bold text-slate-900">Welcome back</h1>
-          <p className="mt-3 text-sm text-slate-500">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Welcome back</h1>
+          <p className="mt-2.5 text-sm text-slate-500">
             Sign in to your QuickHire account
           </p>
         </div>
 
-        <AppCard hover={false} className="p-8">
+        <AppCard hover={false} className="p-5 sm:p-7">
           <form onSubmit={handleSubmit} className="space-y-5">
             <AppInput
               label="Email"

@@ -6,18 +6,14 @@ import {
   updateApplicationStatus,
 } from "../../api/applicationApi";
 
-import Loader from "../../components/common/Loader";
 import ErrorState from "../../components/common/ErrorState";
 import EmptyState from "../../components/common/EmptyState";
 
 import toast from "react-hot-toast";
 
 import {
-  CheckCircle2,
-  Clock,
   XCircle,
   FileText,
-  Mail,
   User,
   Download,
   Eye,
@@ -185,16 +181,16 @@ const ApplicantsPage = () => {
               <p className="text-slate-500">{jobCompany}</p>
             )}
           </div>
-          <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm">
+          <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm shadow-slate-200/60">
             {applications.length} applicant{applications.length !== 1 ? "s" : ""}
           </div>
         </div>
-        <p className="max-w-2xl text-sm text-slate-500">
+        <p className="max-w-2xl text-sm leading-6 text-slate-500">
           Review candidate profiles, open resumes, and update application status with a recruiter-grade workflow.
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         {applications.map((application) => {
           const resumeUrl =
             application.applicant?.currentResume?.resumeUrl ||
@@ -209,17 +205,17 @@ const ApplicantsPage = () => {
               padding={false}
               className="overflow-hidden"
             >
-              <div className="border-b border-slate-200 bg-slate-50/80 px-6 py-5 sm:px-8">
+              <div className="border-b border-slate-200 bg-slate-50/80 px-5 py-5 sm:px-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-200 text-slate-600">
-                      <User className="h-7 w-7" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-200 text-slate-600">
+                      <User className="h-6 w-6" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-900">
+                      <h2 className="text-lg font-semibold tracking-tight text-slate-900">
                         {application.applicant?.name || "Unnamed Candidate"}
                       </h2>
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600">
                         <span>{application.applicant?.email || "No email"}</span>
                         <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
                         <span>Applied {formatDate(application.createdAt)}</span>
@@ -236,10 +232,10 @@ const ApplicantsPage = () => {
                 </div>
               </div>
 
-              <div className="px-6 py-6 sm:px-8">
+              <div className="px-5 py-5 sm:px-6">
                 <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
                   <div className="space-y-5">
-                    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                       <div className="flex items-center justify-between gap-4">
                         <div>
                           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
@@ -254,13 +250,13 @@ const ApplicantsPage = () => {
                         </span>
                       </div>
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-2xl bg-white p-4 shadow-sm">
+                        <div className="rounded-2xl bg-white p-4 shadow-sm shadow-slate-200/60">
                           <p className="text-sm text-slate-500">Email</p>
                           <p className="mt-2 font-medium text-slate-900">
                             {application.applicant?.email || "No email provided"}
                           </p>
                         </div>
-                        <div className="rounded-2xl bg-white p-4 shadow-sm">
+                        <div className="rounded-2xl bg-white p-4 shadow-sm shadow-slate-200/60">
                           <p className="text-sm text-slate-500">Job</p>
                           <p className="mt-2 font-medium text-slate-900">
                             {application.job?.title || "Unknown role"}
@@ -273,7 +269,7 @@ const ApplicantsPage = () => {
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="rounded-3xl border border-slate-200 p-5">
+                      <div className="rounded-2xl border border-slate-200 p-5">
                         <div className="flex items-center justify-between gap-3">
                           <div>
                             <p className="text-sm font-semibold text-slate-500">Resume Status</p>
@@ -293,7 +289,7 @@ const ApplicantsPage = () => {
                         )}
                       </div>
 
-                      <div className="rounded-3xl border border-slate-200 p-5">
+                      <div className="rounded-2xl border border-slate-200 p-5">
                         <p className="text-sm font-semibold text-slate-500">Application Details</p>
                         <div className="mt-4 space-y-3 text-sm text-slate-700">
                           <div>
@@ -313,7 +309,7 @@ const ApplicantsPage = () => {
                     </div>
                   </div>
 
-                  <aside className="space-y-5 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                  <aside className="space-y-5 rounded-2xl border border-slate-200 bg-slate-50 p-5">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between gap-4">
                         <div>
@@ -362,7 +358,7 @@ const ApplicantsPage = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-3 rounded-3xl bg-white p-4 shadow-sm">
+                    <div className="space-y-3 rounded-2xl bg-white p-4 shadow-sm shadow-slate-200/60">
                       <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
                         Update Status
                       </p>
@@ -404,7 +400,7 @@ const ApplicantsPage = () => {
 
       {isDetailOpen && selectedApplication && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6">
-          <div className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+          <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
             <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
@@ -426,7 +422,7 @@ const ApplicantsPage = () => {
 
             <div className="space-y-6 px-6 py-6 sm:px-8">
               <div className="grid gap-6 lg:grid-cols-2">
-                <div className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6">
                   <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
                     Candidate Information
                   </p>
@@ -452,7 +448,7 @@ const ApplicantsPage = () => {
                   </div>
                 </div>
 
-                <div className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6">
                   <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
                     Application Overview
                   </p>
@@ -482,7 +478,7 @@ const ApplicantsPage = () => {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 sm:p-6">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
@@ -571,11 +567,11 @@ const ApplicantsPage = () => {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6">
                 <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
                   Cover letter
                 </p>
-                <p className="mt-4 rounded-3xl bg-white p-5 text-sm leading-6 text-slate-700 shadow-sm">
+                <p className="mt-4 rounded-2xl bg-white p-5 text-sm leading-6 text-slate-700 shadow-sm shadow-slate-200/60">
                   {selectedApplication.coverLetter || "This candidate did not submit a cover letter."}
                 </p>
               </div>
